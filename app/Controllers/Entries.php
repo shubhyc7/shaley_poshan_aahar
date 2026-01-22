@@ -207,7 +207,7 @@ class Entries extends BaseController
             $sheet->setCellValue($col . '1', $header);
             $colIndex++;
         }
-        
+
         // Add support item headers
         foreach ($supportItems as $si) {
             $col = $this->getColumnLetter($colIndex + 1);
@@ -219,7 +219,7 @@ class Entries extends BaseController
         $totalCols = $colIndex;
         $lastCol = $this->getColumnLetter($totalCols);
         $headerRange = 'A1:' . $lastCol . '1';
-        
+
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
@@ -237,31 +237,31 @@ class Entries extends BaseController
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, date('d-M-Y', strtotime($entry['entry_date'])));
             $colIndex++;
-            
+
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, 'Class ' . $entry['category']);
             $colIndex++;
-            
+
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, $entry['total_students']);
             $colIndex++;
-            
+
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, $entry['present_students']);
             $colIndex++;
-            
+
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, $entry['main_item_name'] ?? 'N/A');
             $colIndex++;
-            
+
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, number_format($entry['qty'], 3));
             $colIndex++;
-            
+
             $col = $this->getColumnLetter($colIndex + 1);
             $sheet->setCellValue($col . $row, $entry['main_item_unit'] ?? '');
             $colIndex++;
-            
+
             // Add support items data
             foreach ($supportItems as $si) {
                 $supportEntry = $db->table('daily_aahar_entries_support_items')
@@ -282,7 +282,7 @@ class Entries extends BaseController
 
         // Set response headers
         $filename = 'Daily_Entries_' . date('Y-m-d_His') . '.xlsx';
-        
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

@@ -37,7 +37,6 @@ class Stock extends BaseController
 
     public function store()
     {
-
         $model = new StockModel();
         $itemId = $this->request->getPost('item_id');
         $opening = $this->request->getPost('opening_stock');
@@ -113,7 +112,7 @@ class Stock extends BaseController
 
         // Set response headers
         $filename = 'Stock_Report_' . date("F", mktime(0, 0, 0, $month, 10)) . '_' . $year . '_' . date('Y-m-d_His') . '.xlsx';
-        
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
