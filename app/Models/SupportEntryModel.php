@@ -14,6 +14,7 @@ class SupportEntryModel extends Model
         return $this->select('daily_aahar_entries_support_items.*, items.item_name, items.unit')
             ->join('items', 'items.id = daily_aahar_entries_support_items.support_item_id')
             ->where('entry_date', $date)
+            ->where('is_disable', '0')
             ->findAll();
     }
 }

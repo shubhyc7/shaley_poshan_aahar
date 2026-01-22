@@ -19,17 +19,15 @@ class Entries extends BaseController
         $itemModel = new ItemModel();
         $entryModel = new EntryModel();
 
-        $month = date('n');
-        $year = date('Y');
+        $data['main_items'] = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
+        $data['support_items'] = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
 
-        $data['main_items'] = $itemModel->where('item_type', 'MAIN')->findAll();
-        $data['support_items'] = $itemModel->where('item_type', 'SUPPORT')->findAll();
-
-        // Fetch history with a complex join to get support items in one view if needed, 
-        // but for simplicity, we use the model helper.
+        // Fetch only active history entries
         $data['entries'] = $entryModel->select('daily_aahar_entries.*, items.item_name')
             ->join('items', 'items.id = daily_aahar_entries.item_id')
-            ->orderBy('entry_date', 'DESC')->findAll();
+            ->where('daily_aahar_entries.is_disable', 0)
+            ->orderBy('entry_date', 'DESC')
+            ->findAll();
 
         return view('entries/index', $data);
     }
@@ -58,17 +56,31 @@ class Entries extends BaseController
     public function store()
     {
         $entryModel = new EntryModel();
-        $supportModel = new SupportEntryModel();
+        $supportModel = new SupportEntryModel(); // Ensure this model points to daily_aahar_entries_support_items
+
         $date = $this->request->getPost('entry_date');
         $category = $this->request->getPost('category');
 
-        // 1. Save Header Entry (Attendance)
-        // We store item_id as 0 or NULL if multiple items are selected, 
-        // but better to save one row per main item to keep your history logic working.
+        // 1. DUPLICATE ENTRY VALIDATION
+        // Prevent multiple entries for the same Class Category on the same Date
+        $existing = $entryModel->where([
+            'entry_date' => $date,
+            'category'   => $category,
+            'is_disable' => 0
+        ])->first();
 
-        $main_item_ids = $this->request->getPost('main_item_id'); // Now an array
-        $main_qtys = $this->request->getPost('main_item_qty'); // Now an array
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', "Class $category record for this date already exists!");
+        }
 
+        $main_item_ids = $this->request->getPost('main_item_id');
+        $main_qtys = $this->request->getPost('main_item_qty');
+
+        if (empty($main_item_ids)) {
+            return redirect()->back()->withInput()->with('error', "Please select at least one Main Item.");
+        }
+
+        // Loop through selected Main Items (e.g., Rice and Dal)
         foreach ($main_item_ids as $idx => $m_id) {
             $mainData = [
                 'entry_date'       => $date,
@@ -79,12 +91,14 @@ class Entries extends BaseController
                 'qty'              => $main_qtys[$idx],
                 'month'            => date('n', strtotime($date)),
                 'year'             => date('Y', strtotime($date)),
+                'is_disable'       => 0
             ];
+
             $entryModel->insert($mainData);
             $lastMainId = $entryModel->getInsertID();
 
-            // 2. Save Support Items ONLY for the first main item 
-            // (to avoid doubling salt/oil if two main items are served)
+            // 2. Save Support Items (Oil, Salt, etc.) ONLY for the first main item loop
+            // This prevents duplicating ingredient consumption if two main items are served.
             if ($idx === 0) {
                 $s_ids = $this->request->getPost('support_item_id');
                 $s_qtys = $this->request->getPost('support_qty');
@@ -95,14 +109,15 @@ class Entries extends BaseController
                                 'main_entry_id'   => $lastMainId,
                                 'entry_date'      => $date,
                                 'support_item_id' => $sid,
-                                'qty'             => $s_qtys[$s_idx]
+                                'qty'             => $s_qtys[$s_idx],
+                                'is_disable'      => 0
                             ]);
                         }
                     }
                 }
             }
         }
-        return redirect()->to('/entries')->with('status', 'Multiple items saved successfully!');
+        return redirect()->to('/entries')->with('status', 'Entries saved successfully!');
     }
 
 
@@ -159,24 +174,24 @@ class Entries extends BaseController
         return $this->response->setJSON(['rates' => $all_calculated]);
     }
 
+    // SOFT DELETE: Update is_disable to 1
     public function delete($id)
     {
-        $entryModel = new \App\Models\EntryModel();
-        $supportModel = new \App\Models\SupportEntryModel();
+        $entryModel = new EntryModel();
+        $supportModel = new SupportEntryModel();
 
-        // 1. Check if the record exists
         $entry = $entryModel->find($id);
 
         if ($entry) {
-            // 2. Delete linked support items first (using the Foreign Key)
-            $supportModel->where('main_entry_id', $id)->delete();
+            // 1. Soft delete the support items linked to this specific entry
+            $supportModel->where('main_entry_id', $id)->set(['is_disable' => 1])->update();
 
-            // 3. Delete the main entry
-            $entryModel->delete($id);
+            // 2. Soft delete the main entry
+            $entryModel->update($id, ['is_disable' => 1]);
 
-            return redirect()->to('/entries')->with('status', 'Entry and linked support items deleted successfully.');
+            return redirect()->to('/entries')->with('status', 'Entry archived successfully.');
         } else {
-            return redirect()->to('/entries')->with('error', 'Entry not found.');
+            return redirect()->to('/entries')->with('error', 'Record not found.');
         }
     }
 
@@ -186,15 +201,14 @@ class Entries extends BaseController
         $itemModel = new ItemModel();
         $db = \Config\Database::connect();
 
-        // Get all entries with item names
+        // Export only active entries
         $entries = $entryModel->select('daily_aahar_entries.*, items.item_name as main_item_name, items.unit as main_item_unit')
             ->join('items', 'items.id = daily_aahar_entries.item_id', 'left')
+            ->where('daily_aahar_entries.is_disable', 0)
             ->orderBy('entry_date', 'DESC')
             ->findAll();
 
-        // Get main and support items for column headers
-        $mainItems = $itemModel->where('item_type', 'MAIN')->findAll();
-        $supportItems = $itemModel->where('item_type', 'SUPPORT')->findAll();
+        $supportItems = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -265,7 +279,7 @@ class Entries extends BaseController
             // Add support items data
             foreach ($supportItems as $si) {
                 $supportEntry = $db->table('daily_aahar_entries_support_items')
-                    ->where(['main_entry_id' => $entry['id'], 'support_item_id' => $si['id']])
+                    ->where(['main_entry_id' => $entry['id'], 'support_item_id' => $si['id'], 'is_disable' => '0'])
                     ->get()->getRow();
                 $col = $this->getColumnLetter($colIndex + 1);
                 $sheet->setCellValue($col . $row, $supportEntry ? number_format($supportEntry->qty, 3) : '0.000');

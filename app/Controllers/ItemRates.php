@@ -17,7 +17,8 @@ class ItemRates extends BaseController
         $itemModel = new ItemModel();
 
         $data['rates'] = $rateModel->getRatesWithItems();
-        $data['items'] = $itemModel->where('is_active', 1)->findAll();
+        // Fetch only active items for the dropdown
+        $data['items'] = $itemModel->where('is_disable', 0)->findAll();
 
         return view('item_rates/index', $data);
     }
@@ -25,13 +26,34 @@ class ItemRates extends BaseController
     public function store()
     {
         $model = new RateModel();
+
+        $item_id  = $this->request->getPost('item_id');
+        $category = $this->request->getPost('category');
+        $month    = $this->request->getPost('month');
+        $year     = $this->request->getPost('year');
+
+        // DUPLICATE VALIDATION
+        $existing = $model->where([
+            'item_id'    => $item_id,
+            'category'   => $category,
+            'month'      => $month,
+            'year'       => $year,
+            'is_disable' => 0
+        ])->first();
+
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', "A rate for this item already exists for the selected category and month!");
+        }
+
         $model->save([
-            'item_id'         => $this->request->getPost('item_id'),
-            'category'        => $this->request->getPost('category'),
+            'item_id'         => $item_id,
+            'category'        => $category,
             'per_student_qty' => $this->request->getPost('per_student_qty'),
-            'month'           => $this->request->getPost('month'),
-            'year'            => $this->request->getPost('year'),
+            'month'           => $month,
+            'year'            => $year,
+            'is_disable'      => 0
         ]);
+
         return redirect()->to('/ItemRates')->with('status', 'Consumption Rate Saved');
     }
 
@@ -45,31 +67,54 @@ class ItemRates extends BaseController
     public function update($id)
     {
         $model = new RateModel();
+
+        $item_id  = $this->request->getPost('item_id');
+        $category = $this->request->getPost('category');
+        $month    = $this->request->getPost('month');
+        $year     = $this->request->getPost('year');
+
+        // DUPLICATE VALIDATION (Exclude current ID)
+        $existing = $model->where([
+            'item_id'    => $item_id,
+            'category'   => $category,
+            'month'      => $month,
+            'year'       => $year,
+            'is_disable' => 0
+        ])->where('id !=', $id)->first();
+
+        if ($existing) {
+            return redirect()->back()->with('error', "Another record already exists with these settings!");
+        }
+
         $model->update($id, [
-            'item_id'         => $this->request->getPost('item_id'),
-            'category'        => $this->request->getPost('category'),
+            'item_id'         => $item_id,
+            'category'        => $category,
             'per_student_qty' => $this->request->getPost('per_student_qty'),
-            'month'           => $this->request->getPost('month'),
-            'year'            => $this->request->getPost('year'),
+            'month'           => $month,
+            'year'            => $year,
         ]);
+
         return redirect()->to('/ItemRates')->with('status', 'Rate Updated Successfully');
     }
 
     public function delete($id)
     {
-        (new RateModel())->delete($id);
-        return redirect()->to('/ItemRates')->with('status', 'Rate Deleted');
+        $model = new RateModel();
+        // SOFT DELETE: Mark as disabled instead of removing
+        $model->update($id, ['is_disable' => 1]);
+
+        return redirect()->to('/ItemRates')->with('status', 'Rate Deleted Successfully');
     }
 
     public function export()
     {
         $rateModel = new RateModel();
+        // getRatesWithItems already filters by is_disable = 0
         $rates = $rateModel->getRatesWithItems();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set headers
         $sheet->setCellValue('A1', 'ID');
         $sheet->setCellValue('B1', 'Item Name');
         $sheet->setCellValue('C1', 'Category');
@@ -78,7 +123,6 @@ class ItemRates extends BaseController
         $sheet->setCellValue('F1', 'Qty Per Student');
         $sheet->setCellValue('G1', 'Unit');
 
-        // Style headers
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
@@ -89,7 +133,6 @@ class ItemRates extends BaseController
         ];
         $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
 
-        // Add data
         $row = 2;
         foreach ($rates as $rate) {
             $sheet->setCellValue('A' . $row, $rate['id']);
@@ -102,14 +145,11 @@ class ItemRates extends BaseController
             $row++;
         }
 
-        // Auto-size columns
         foreach (range('A', 'G') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Set response headers
         $filename = 'Consumption_Rates_' . date('Y-m-d_His') . '.xlsx';
-        
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

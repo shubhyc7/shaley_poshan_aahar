@@ -13,23 +13,36 @@ class Items extends BaseController
     public function index()
     {
         $model = new ItemModel();
-        $data['items'] = $model->findAll();
+        // Only show active items
+        $data['items'] = $model->getActive()->findAll();
         return view('items/index', $data);
     }
 
     public function store()
     {
         $model = new ItemModel();
+        $itemName = trim($this->request->getPost('item_name'));
+
+        // DUPLICATE VALIDATION
+        $existing = $model->where([
+            'item_name'  => $itemName,
+            'is_disable' => 0
+        ])->first();
+
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', "Item '$itemName' already exists in the master list!");
+        }
+
         $model->save([
-            'item_name' => $this->request->getPost('item_name'),
+            'item_name' => $itemName,
             'item_type' => $this->request->getPost('item_type'),
             'unit'      => $this->request->getPost('unit'),
-            'is_active' => 1
+            'is_disable' => 0
         ]);
+
         return redirect()->to('/items')->with('status', 'Item Added Successfully');
     }
 
-    // Fetch single item data for the modal
     public function edit($id)
     {
         $model = new ItemModel();
@@ -37,40 +50,55 @@ class Items extends BaseController
         return $this->response->setJSON($data);
     }
 
-    // Process the update
     public function update($id)
     {
         $model = new ItemModel();
+        $itemName = trim($this->request->getPost('item_name'));
+
+        // DUPLICATE VALIDATION (Exclude current record)
+        $existing = $model->where([
+            'item_name'  => $itemName,
+            'is_disable' => 0
+        ])->where('id !=', $id)->first();
+
+        if ($existing) {
+            return redirect()->back()->with('error', "Another active item with the name '$itemName' already exists!");
+        }
+
         $model->update($id, [
-            'item_name' => $this->request->getPost('item_name'),
+            'item_name' => $itemName,
             'item_type' => $this->request->getPost('item_type'),
             'unit'      => $this->request->getPost('unit'),
         ]);
+
         return redirect()->to('/items')->with('status', 'Item Updated Successfully');
     }
 
+    // SOFT DELETE Logic
     public function delete($id)
     {
         $model = new ItemModel();
-        $model->delete($id);
-        return redirect()->to('/items')->with('status', 'Item Deleted');
+
+        // Update is_disable instead of deleting the row
+        $model->update($id, ['is_disable' => 1]);
+
+        return redirect()->to('/items')->with('status', 'Item Deleted Successfully (Archived)');
     }
 
     public function export()
     {
         $model = new ItemModel();
-        $items = $model->findAll();
+        // Export only active items
+        $items = $model->getActive()->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set headers
         $sheet->setCellValue('A1', 'ID');
         $sheet->setCellValue('B1', 'Item Name');
         $sheet->setCellValue('C1', 'Category');
         $sheet->setCellValue('D1', 'Unit');
 
-        // Style headers
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
@@ -81,7 +109,6 @@ class Items extends BaseController
         ];
         $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
 
-        // Add data
         $row = 2;
         foreach ($items as $item) {
             $sheet->setCellValue('A' . $row, $item['id']);
@@ -91,14 +118,11 @@ class Items extends BaseController
             $row++;
         }
 
-        // Auto-size columns
         foreach (range('A', 'D') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Set response headers
-        $filename = 'Items_' . date('Y-m-d_His') . '.xlsx';
-        
+        $filename = 'Items_Master_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

@@ -109,7 +109,7 @@
                                         <td class="text-center small">
                                             <?php
                                             $sv = $db->table('daily_aahar_entries_support_items')
-                                                ->where(['main_entry_id' => $row['id'], 'support_item_id' => $si['id']])
+                                                ->where(['main_entry_id' => $row['id'], 'support_item_id' => $si['id'], 'is_disable' => '0'])
                                                 ->get()->getRow();
                                             echo $sv ? '<span class="text-secondary fw-bold">' . number_format($sv->qty, 3) . '</span>' : '<span class="text-light">0.000</span>';
                                             ?>
