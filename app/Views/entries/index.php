@@ -30,7 +30,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th style="min-width: 140px;">तारीख</th>
-                            <th style="min-width: 140px;">श्रेणी</th>
+                            <th style="min-width: 140px;">इयत्ता </th>
                             <th style="width: 100px;">एकूण</th>
                             <th style="width: 100px;">उपस्थित</th>
                             <?php foreach ($main_items as $mi) : ?>

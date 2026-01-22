@@ -147,7 +147,7 @@ class Entries extends BaseController
         $year = date('Y', strtotime($date));
 
         $model = new StudentStrengthModel();
-        $strength = $model->where(['month' => $month, 'year' => $year, 'category' => $category])->first();
+        $strength = $model->where(['month' => $month, 'year' => $year, 'category' => $category, 'is_disable' => '0'])->first();
 
         return $this->response->setJSON(['total' => $strength['total_students'] ?? 0]);
     }

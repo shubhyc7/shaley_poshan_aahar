@@ -16,23 +16,21 @@ class Stock extends BaseController
         $stockModel = new StockModel();
         $itemModel  = new ItemModel();
 
-        $month = $this->request->getGet('month') ?? date('n');
-        $year  = $this->request->getGet('year') ?? date('Y');
+        // Get selected date from URL or default to today
+        $stockDate = $this->request->getGet('stock_date') ?? date('Y-m-d');
 
         $db = \Config\Database::connect();
 
-        // 1. Get usage from Main Items
+        // 1. Get usage from Main Items for THIS date
         $mainUsed = $db->table('daily_aahar_entries')
             ->select('item_id, SUM(qty) as total')
-            ->where('month', $month)->where('year', $year)
+            ->where(['entry_date' => $stockDate, 'is_disable' => 0])
             ->groupBy('item_id')->get()->getResultArray();
 
-        // 2. Get usage from Support Items
+        // 2. Get usage from Support Items for THIS date
         $supportUsed = $db->table('daily_aahar_entries_support_items')
             ->select('support_item_id as item_id, SUM(qty) as total')
-            ->where('month(entry_date)', $month)
-            ->where('year(entry_date)', $year)
-            ->where('is_disable', '0')
+            ->where(['entry_date' => $stockDate, 'is_disable' => 0])
             ->groupBy('support_item_id')->get()->getResultArray();
 
         $usedLookup = [];
@@ -40,11 +38,9 @@ class Stock extends BaseController
             $usedLookup[$u['item_id']] = ($usedLookup[$u['item_id']] ?? 0) + $u['total'];
         }
 
-        $data['stock'] = $stockModel->getStockWithItems($month, $year);
-        // Only show active items in the dropdown
+        $data['stock'] = $stockModel->getStockWithItems($stockDate);
         $data['items'] = $itemModel->where('is_disable', 0)->findAll();
-        $data['month'] = $month;
-        $data['year']  = $year;
+        $data['stockDate'] = $stockDate;
         $data['used_lookup'] = $usedLookup;
 
         return view('stock/index', $data);
@@ -54,15 +50,14 @@ class Stock extends BaseController
     {
         $model = new StockModel();
         $itemId = $this->request->getPost('item_id');
-        $month = $this->request->getPost('month');
-        $year = $this->request->getPost('year');
-        $stockId = $this->request->getPost('id'); // Pass ID if editing
+        $stockDate = $this->request->getPost('stock_date'); // The new or existing date
+        $stockId = $this->request->getPost('id');
 
-        // DUPLICATE VALIDATION (Check if this item already has a stock entry for this period)
+        // DUPLICATE VALIDATION
+        // Check if another record (different ID) already exists for this ITEM + DATE
         $query = $model->where([
             'item_id'    => $itemId,
-            'month'      => $month,
-            'year'       => $year,
+            'stock_date' => $stockDate,
             'is_disable' => 0
         ]);
 
@@ -70,10 +65,8 @@ class Stock extends BaseController
             $query->where('id !=', $stockId);
         }
 
-        $existing = $query->first();
-
-        if ($existing) {
-            return redirect()->back()->withInput()->with('error', 'या वस्तूचा या महिन्याचा स्टॉक आधीच नोंदवलेला आहे!');
+        if ($query->first()) {
+            return redirect()->back()->withInput()->with('error', 'या तारखेसाठी या वस्तूचा स्टॉक आधीच नोंदवलेला आहे!');
         }
 
         $opening = (float)$this->request->getPost('opening_stock');
@@ -82,42 +75,38 @@ class Stock extends BaseController
 
         $saveData = [
             'item_id'         => $itemId,
+            'stock_date'      => $stockDate,
             'opening_stock'   => $opening,
             'received_stock'  => $received,
             'used_stock'      => $used,
             'remaining_stock' => ($opening + $received) - $used,
-            'month'           => $month,
-            'year'            => $year,
             'is_disable'      => 0
         ];
 
         if ($stockId) {
             $model->update($stockId, $saveData);
+            $msg = "स्टॉक यशस्वीरित्या अपडेट केला!";
         } else {
             $model->save($saveData);
+            $msg = "स्टॉक यशस्वीरित्या जतन केला!";
         }
 
-        return redirect()->to(base_url("Stock?month=$month&year=$year"))->with('status', 'स्टॉक यशस्वीरित्या जतन केला!');
+        // Redirect to the date of the record that was just saved
+        return redirect()->to(base_url("Stock?stock_date=$stockDate"))->with('status', $msg);
     }
 
     public function edit($id)
     {
         $model = new StockModel();
-        $data = $model->find($id);
-        return $this->response->setJSON($data);
+        return $this->response->setJSON($model->find($id));
     }
 
-    // SOFT DELETE: Update is_disable to 1
     public function delete($id)
     {
         $model = new StockModel();
-        $month = $this->request->getGet('month');
-        $year = $this->request->getGet('year');
-
+        $date = $this->request->getGet('stock_date');
         $model->update($id, ['is_disable' => 1]);
-
-        return redirect()->to(base_url("Stock?month=$month&year=$year"))
-            ->with('status', 'स्टॉक नोंद हटवण्यात आली (Archived)');
+        return redirect()->to(base_url("Stock?stock_date=$date"))->with('status', 'नोंद हटवण्यात आली');
     }
 
     public function export()
