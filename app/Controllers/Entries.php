@@ -178,15 +178,18 @@ class Entries extends BaseController
     public function delete($id)
     {
         $entryModel = new EntryModel();
-        $supportModel = new SupportEntryModel();
+        $db = \Config\Database::connect();
 
         $entry = $entryModel->find($id);
 
         if ($entry) {
-            // 1. Soft delete the support items linked to this specific entry
-            $supportModel->where('main_entry_id', $id)->set(['is_disable' => 1])->update();
+            // 1. Soft delete the support items using Query Builder 
+            // This avoids the "No data to update" exception even if no support items exist
+            $db->table('daily_aahar_entries_support_items')
+                ->where('main_entry_id', $id)
+                ->update(['is_disable' => 1]);
 
-            // 2. Soft delete the main entry
+            // 2. Soft delete the main entry using the Model's primary key method
             $entryModel->update($id, ['is_disable' => 1]);
 
             return redirect()->to('/entries')->with('status', 'Entry archived successfully.');
