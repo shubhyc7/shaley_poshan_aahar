@@ -13,23 +13,45 @@ class StudentStrength extends BaseController
     public function index()
     {
         $model = new StudentStrengthModel();
-        $data['records'] = $model->orderBy('year', 'DESC')->orderBy('month', 'DESC')->findAll();
+        // Only show records where is_disable = 0
+        $data['records'] = $model->getActive()
+            ->orderBy('year', 'DESC')
+            ->orderBy('month', 'DESC')
+            ->findAll();
         return view('student_strength/index', $data);
     }
 
     public function store()
     {
         $model = new StudentStrengthModel();
+
+        $category = $this->request->getPost('category');
+        $month    = $this->request->getPost('month');
+        $year     = $this->request->getPost('year');
+
+        // DUPLICATE VALIDATION
+        $existing = $model->where([
+            'category'   => $category,
+            'month'      => $month,
+            'year'       => $year,
+            'is_disable' => 0
+        ])->first();
+
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', "Data already exists for $category in this Month/Year!");
+        }
+
         $model->save([
-            'category'       => $this->request->getPost('category'),
+            'category'       => $category,
             'total_students' => $this->request->getPost('total_students'),
-            'month'          => $this->request->getPost('month'),
-            'year'           => $this->request->getPost('year'),
+            'month'          => $month,
+            'year'           => $year,
+            'is_disable'     => 0
         ]);
+
         return redirect()->to('/StudentStrength')->with('status', 'Strength Saved');
     }
 
-    // Fetch single record for the Edit Modal
     public function edit($id)
     {
         $model = new StudentStrengthModel();
@@ -37,42 +59,62 @@ class StudentStrength extends BaseController
         return $this->response->setJSON($data);
     }
 
-    // Save updated data
     public function update($id)
     {
         $model = new StudentStrengthModel();
+
+        $category = $this->request->getPost('category');
+        $month    = $this->request->getPost('month');
+        $year     = $this->request->getPost('year');
+
+        // DUPLICATE VALIDATION (Exclude current ID)
+        $existing = $model->where([
+            'category'   => $category,
+            'month'      => $month,
+            'year'       => $year,
+            'is_disable' => 0
+        ])->where('id !=', $id)->first();
+
+        if ($existing) {
+            return redirect()->back()->with('error', "Another record already exists for $category in this Month/Year!");
+        }
+
         $model->update($id, [
-            'category'       => $this->request->getPost('category'),
+            'category'       => $category,
             'total_students' => $this->request->getPost('total_students'),
-            'month'          => $this->request->getPost('month'),
-            'year'           => $this->request->getPost('year'),
+            'month'          => $month,
+            'year'           => $year,
         ]);
 
         return redirect()->to('/StudentStrength')->with('status', 'Strength Updated Successfully');
     }
+
+    // SOFT DELETE Logic
     public function delete($id)
     {
         $model = new StudentStrengthModel();
-        $model->delete($id);
-        return redirect()->to('/StudentStrength')->with('status', 'Record Deleted');
+
+        // Instead of true delete, we update is_disable to 1
+        $model->update($id, ['is_disable' => 1]);
+
+        return redirect()->to('/StudentStrength')->with('status', 'Record Deleted Successfully');
     }
 
     public function export()
     {
         $model = new StudentStrengthModel();
-        $records = $model->orderBy('year', 'DESC')->orderBy('month', 'DESC')->findAll();
+        // Export only active records
+        $records = $model->getActive()->orderBy('year', 'DESC')->orderBy('month', 'DESC')->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set headers
         $sheet->setCellValue('A1', 'ID');
         $sheet->setCellValue('B1', 'Category');
         $sheet->setCellValue('C1', 'Month');
         $sheet->setCellValue('D1', 'Year');
         $sheet->setCellValue('E1', 'Total Students');
 
-        // Style headers
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
@@ -83,7 +125,6 @@ class StudentStrength extends BaseController
         ];
         $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
 
-        // Add data
         $row = 2;
         foreach ($records as $record) {
             $sheet->setCellValue('A' . $row, $record['id']);
@@ -94,14 +135,11 @@ class StudentStrength extends BaseController
             $row++;
         }
 
-        // Auto-size columns
         foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Set response headers
         $filename = 'Student_Strength_' . date('Y-m-d_His') . '.xlsx';
-        
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
