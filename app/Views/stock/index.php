@@ -20,6 +20,9 @@
                 <button type="submit" class="btn btn-dark w-100">Filter</button>
             </div>
             <div class="col-md-5 text-end">
+                <a href="<?= base_url('Stock/export?month=' . $month . '&year=' . $year) ?>" class="btn btn-success me-2">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </a>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
                     <i class="fas fa-plus"></i> Update Stock
                 </button>

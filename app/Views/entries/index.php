@@ -2,8 +2,11 @@
 <?= $this->section('content') ?>
 
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white py-3">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
         <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-plus-circle me-2"></i>Daily Multi-Item Entry</h5>
+        <a href="<?= base_url('Entries/export') ?>" class="btn btn-success btn-sm">
+            <i class="fas fa-file-excel"></i> Export to Excel
+        </a>
     </div>
 
     <?php if (session()->getFlashdata('status')) : ?>

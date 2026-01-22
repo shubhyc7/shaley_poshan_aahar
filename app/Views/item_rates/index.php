@@ -3,9 +3,14 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Consumption Rates (Per Student)</h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rateModal">
-        <i class="fas fa-plus me-1"></i> Set New Rate
-    </button>
+    <div>
+        <a href="<?= base_url('ItemRates/export') ?>" class="btn btn-success me-2">
+            <i class="fas fa-file-excel"></i> Export to Excel
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rateModal">
+            <i class="fas fa-plus me-1"></i> Set New Rate
+        </button>
+    </div>
 </div>
 
 <?php if (session()->getFlashdata('status')) : ?>

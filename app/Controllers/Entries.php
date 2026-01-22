@@ -7,6 +7,10 @@ use App\Models\ItemModel;
 use App\Models\RateModel;
 use App\Models\StudentStrengthModel;
 use App\Models\SupportEntryModel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class Entries extends BaseController
 {
@@ -174,5 +178,128 @@ class Entries extends BaseController
         } else {
             return redirect()->to('/entries')->with('error', 'Entry not found.');
         }
+    }
+
+    public function export()
+    {
+        $entryModel = new EntryModel();
+        $itemModel = new ItemModel();
+        $db = \Config\Database::connect();
+
+        // Get all entries with item names
+        $entries = $entryModel->select('daily_aahar_entries.*, items.item_name as main_item_name, items.unit as main_item_unit')
+            ->join('items', 'items.id = daily_aahar_entries.item_id', 'left')
+            ->orderBy('entry_date', 'DESC')
+            ->findAll();
+
+        // Get main and support items for column headers
+        $mainItems = $itemModel->where('item_type', 'MAIN')->findAll();
+        $supportItems = $itemModel->where('item_type', 'SUPPORT')->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $colIndex = 0;
+        $headers = ['Date', 'Category', 'Total Students', 'Present Students', 'Main Item', 'Main Qty', 'Unit'];
+        foreach ($headers as $header) {
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . '1', $header);
+            $colIndex++;
+        }
+        
+        // Add support item headers
+        foreach ($supportItems as $si) {
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . '1', $si['item_name']);
+            $colIndex++;
+        }
+
+        // Calculate last column (7 base columns + support items)
+        $totalCols = $colIndex;
+        $lastCol = $this->getColumnLetter($totalCols);
+        $headerRange = 'A1:' . $lastCol . '1';
+        
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4']
+            ],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+        ];
+        $sheet->getStyle($headerRange)->applyFromArray($headerStyle);
+
+        // Add data
+        $row = 2;
+        foreach ($entries as $entry) {
+            $colIndex = 0;
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, date('d-M-Y', strtotime($entry['entry_date'])));
+            $colIndex++;
+            
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, 'Class ' . $entry['category']);
+            $colIndex++;
+            
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, $entry['total_students']);
+            $colIndex++;
+            
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, $entry['present_students']);
+            $colIndex++;
+            
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, $entry['main_item_name'] ?? 'N/A');
+            $colIndex++;
+            
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, number_format($entry['qty'], 3));
+            $colIndex++;
+            
+            $col = $this->getColumnLetter($colIndex + 1);
+            $sheet->setCellValue($col . $row, $entry['main_item_unit'] ?? '');
+            $colIndex++;
+            
+            // Add support items data
+            foreach ($supportItems as $si) {
+                $supportEntry = $db->table('daily_aahar_entries_support_items')
+                    ->where(['main_entry_id' => $entry['id'], 'support_item_id' => $si['id']])
+                    ->get()->getRow();
+                $col = $this->getColumnLetter($colIndex + 1);
+                $sheet->setCellValue($col . $row, $supportEntry ? number_format($supportEntry->qty, 3) : '0.000');
+                $colIndex++;
+            }
+            $row++;
+        }
+
+        // Auto-size columns
+        for ($i = 1; $i <= $totalCols; $i++) {
+            $col = $this->getColumnLetter($i);
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Set response headers
+        $filename = 'Daily_Entries_' . date('Y-m-d_His') . '.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function getColumnLetter($num)
+    {
+        $letter = '';
+        $num--; // Convert to 0-based
+        while ($num >= 0) {
+            $letter = chr(65 + ($num % 26)) . $letter;
+            $num = intval($num / 26) - 1;
+        }
+        return $letter;
     }
 }

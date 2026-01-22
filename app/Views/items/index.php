@@ -3,9 +3,14 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Items Master</h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
-        <i class="fas fa-plus"></i> Add New Item
-    </button>
+    <div>
+        <a href="<?= base_url('Items/export') ?>" class="btn btn-success me-2">
+            <i class="fas fa-file-excel"></i> Export to Excel
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+            <i class="fas fa-plus"></i> Add New Item
+        </button>
+    </div>
 </div>
 
 <?php if (session()->getFlashdata('status')) : ?>
