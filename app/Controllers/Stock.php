@@ -16,21 +16,30 @@ class Stock extends BaseController
         $stockModel = new StockModel();
         $itemModel  = new ItemModel();
 
-        // Get selected date from URL or default to today
-        $stockDate = $this->request->getGet('stock_date') ?? date('Y-m-d');
+        // 1. Get Month and Year from Filter (Default to current)
+        $month = $this->request->getGet('month') ?? date('n');
+        $year  = $this->request->getGet('year') ?? date('Y');
+
+        // Create start and end dates for the database queries
+        $startDate = "$year-" . str_pad($month, 2, "0", STR_PAD_LEFT) . "-01";
+        $endDate = date('Y-m-t', strtotime($startDate));
 
         $db = \Config\Database::connect();
 
-        // 1. Get usage from Main Items for THIS date
+        // 2. Sum Usage for the WHOLE month from Main Items
         $mainUsed = $db->table('daily_aahar_entries')
             ->select('item_id, SUM(qty) as total')
-            ->where(['entry_date' => $stockDate, 'is_disable' => 0])
+            ->where('entry_date >=', $startDate)
+            ->where('entry_date <=', $endDate)
+            ->where('is_disable', 0)
             ->groupBy('item_id')->get()->getResultArray();
 
-        // 2. Get usage from Support Items for THIS date
+        // 3. Sum Usage for the WHOLE month from Support Items
         $supportUsed = $db->table('daily_aahar_entries_support_items')
             ->select('support_item_id as item_id, SUM(qty) as total')
-            ->where(['entry_date' => $stockDate, 'is_disable' => 0])
+            ->where('entry_date >=', $startDate)
+            ->where('entry_date <=', $endDate)
+            ->where('is_disable', 0)
             ->groupBy('support_item_id')->get()->getResultArray();
 
         $usedLookup = [];
@@ -38,9 +47,20 @@ class Stock extends BaseController
             $usedLookup[$u['item_id']] = ($usedLookup[$u['item_id']] ?? 0) + $u['total'];
         }
 
-        $data['stock'] = $stockModel->getStockWithItems($stockDate);
+        // 4. Fetch Monthly Stock Records
+        // Note: Ensure your StockModel join uses the month/year columns
+        $data['stock'] = $stockModel->select('item_stock.*, items.item_name, items.unit')
+            ->join('items', 'items.id = item_stock.item_id')
+            ->where([
+                'MONTH(item_stock.stock_date)'      => $month,
+                'YEAR(item_stock.stock_date)'       => $year,
+                'item_stock.is_disable' => 0
+            ])
+            ->findAll();
+
         $data['items'] = $itemModel->where('is_disable', 0)->findAll();
-        $data['stockDate'] = $stockDate;
+        $data['month'] = $month;
+        $data['year']  = $year;
         $data['used_lookup'] = $usedLookup;
 
         return view('stock/index', $data);
@@ -107,6 +127,37 @@ class Stock extends BaseController
         $date = $this->request->getGet('stock_date');
         $model->update($id, ['is_disable' => 1]);
         return redirect()->to(base_url("Stock?stock_date=$date"))->with('status', 'नोंद हटवण्यात आली');
+    }
+
+    public function getDynamicValues()
+    {
+        $itemId = $this->request->getPost('item_id');
+        $date = $this->request->getPost('stock_date');
+        $db = \Config\Database::connect();
+
+        // 1. Fetch Today's Usage (Main + Support Items)
+        $mainUsed = $db->table('daily_aahar_entries')
+            ->where(['item_id' => $itemId, 'entry_date' => $date, 'is_disable' => 0])
+            ->selectSum('qty')->get()->getRow()->qty ?? 0;
+
+        $supportUsed = $db->table('daily_aahar_entries_support_items')
+            ->where(['support_item_id' => $itemId, 'entry_date' => $date, 'is_disable' => 0])
+            ->selectSum('qty')->get()->getRow()->qty ?? 0;
+
+        $todayUsage = (float)$mainUsed + (float)$supportUsed;
+
+        // 2. Fetch Opening Stock (Last recorded Remaining Stock before this date)
+        $prevRecord = (new \App\Models\StockModel())
+            ->where('item_id', $itemId)
+            ->where('stock_date <', $date)
+            ->where('is_disable', 0)
+            ->orderBy('stock_date', 'DESC')
+            ->first();
+
+        return $this->response->setJSON([
+            'opening_stock' => $prevRecord ? (float)$prevRecord['remaining_stock'] : 0,
+            'today_usage'   => $todayUsage
+        ]);
     }
 
     public function export()
