@@ -25,7 +25,7 @@
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
-                    <th>आयडी</th>
+                    <th>क्रमांक</th>
                     <th>श्रेणी</th>
                     <th>महिना / वर्ष</th>
                     <th>एकूण विद्यार्थी</th>
@@ -62,7 +62,7 @@
 <div class="modal fade" id="addModal" tabindex="-1">
     <div class="modal-dialog">
         <form action="<?= base_url('StudentStrength/store') ?>" method="POST" class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-warning">
                 <h5 class="modal-title">विद्यार्थी संख्या जोडा</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

@@ -59,7 +59,7 @@
 <div class="modal fade" id="addStockModal" tabindex="-1">
     <div class="modal-dialog">
         <form action="<?= base_url('Stock/store') ?>" method="POST" class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-warning">
                 <h5>मासिक स्टॉक अपडेट करा</h5>
             </div>
             <div class="modal-body">
