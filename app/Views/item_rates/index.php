@@ -25,6 +25,7 @@
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
+                    <th>क्रमांक</th>
                     <th>वस्तू</th>
                     <th>श्रेणी</th>
                     <th>महिना/वर्ष</th>
@@ -36,11 +37,24 @@
             <tbody>
                 <?php foreach ($rates as $rate) : ?>
                     <tr>
+                        <td><strong><?= $rate['id'] ?></strong></td>
                         <td><strong><?= $rate['item_name'] ?></strong></td>
                         <td><span class="badge bg-info text-dark">इयत्ता <?= $rate['category'] ?></span></td>
                         <td><?= date("M", mktime(0, 0, 0, $rate['month'], 10)) ?> <?= $rate['year'] ?></td>
                         <td><?= number_format($rate['per_student_qty'], 3) ?></td>
-                        <td><?= $rate['unit'] ?></td>
+                        <td>
+                            <?php
+                            if ($rate['unit'] == 'kg') {
+                                echo 'किलो (किलोग्रॅम)';
+                            }
+                            if ($rate['unit'] == 'gm') {
+                                echo 'ग्रॅम';
+                            }
+                            if ($rate['unit'] == 'ltr') {
+                                echo 'लिटर';
+                            }
+                            ?>
+                        </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= $rate['id'] ?>"><i class="fas fa-edit"></i></button>
                             <a href="<?= base_url('ItemRates/delete/' . $rate['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')"><i class="fas fa-trash"></i></a>
