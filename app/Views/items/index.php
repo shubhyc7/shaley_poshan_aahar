@@ -2,13 +2,13 @@
 <?= $this->section('content') ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Items Master</h2>
+    <h2>वस्तू मास्टर</h2>
     <div>
         <a href="<?= base_url('Items/export') ?>" class="btn btn-success me-2">
-            <i class="fas fa-file-excel"></i> Export to Excel
+            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
         </a>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
-            <i class="fas fa-plus"></i> Add New Item
+            <i class="fas fa-plus"></i> नवीन वस्तू जोडा
         </button>
     </div>
 </div>
@@ -25,11 +25,11 @@
         <table class="table table-hover">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
-                    <th>Item Name</th>
-                    <th>Category</th>
-                    <th>Unit</th>
-                    <th>Action</th>
+                    <th>आयडी</th>
+                    <th>वस्तूचे नाव</th>
+                    <th>श्रेणी</th>
+                    <th>एकक</th>
+                    <th>क्रिया</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,7 +48,7 @@
                                 <i class="fas fa-edit"></i>
                             </button>
 
-                            <a href="<?= base_url('items/delete/' . $item['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this item?')">
+                            <a href="<?= base_url('items/delete/' . $item['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('ही वस्तू हटवायची?')">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
@@ -63,33 +63,33 @@
     <div class="modal-dialog">
         <form action="<?= base_url('items/store') ?>" method="POST" class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add New Ingredient</h5>
+                <h5 class="modal-title">नवीन वस्तू जोडा</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Item Name</label>
-                    <input type="text" name="item_name" class="form-control" placeholder="e.g. Rice, Moong Dal, Salt" required>
+                    <label class="form-label">वस्तूचे नाव</label>
+                    <input type="text" name="item_name" class="form-control" placeholder="उदा. तांदूळ, मूग डाळ, मीठ" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Item Type</label>
+                    <label class="form-label">वस्तूचा प्रकार</label>
                     <select name="item_type" class="form-select" required>
-                        <option value="MAIN">MAIN (Primary Grain)</option>
-                        <option value="SUPPORT">SUPPORT (Spices/Oil/Salt)</option>
+                        <option value="MAIN">मुख्य (प्राथमिक धान्य)</option>
+                        <option value="SUPPORT">सहाय्यक (मसाले/तेल/मीठ)</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Unit</label>
+                    <label class="form-label">एकक</label>
                     <select name="unit" class="form-select" required>
-                        <option value="kg">kg (Kilogram)</option>
-                        <option value="gm">gm (Gram)</option>
-                        <option value="ltr">ltr (Liter)</option>
+                        <option value="kg">किलो (किलोग्रॅम)</option>
+                        <option value="gm">ग्रॅम</option>
+                        <option value="ltr">लिटर</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Save Item</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">बंद करा</button>
+                <button type="submit" class="btn btn-primary">जतन करा</button>
             </div>
         </form>
     </div>
@@ -99,33 +99,33 @@
     <div class="modal-dialog">
         <form id="editItemForm" method="POST" class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Edit Ingredient</h5>
+                <h5 class="modal-title">वस्तू संपादित करा</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Item Name</label>
+                    <label class="form-label">वस्तूचे नाव</label>
                     <input type="text" name="item_name" id="edit_item_name" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Item Type</label>
+                    <label class="form-label">वस्तूचा प्रकार</label>
                     <select name="item_type" id="edit_item_type" class="form-select" required>
-                        <option value="MAIN">MAIN (Primary Grain)</option>
-                        <option value="SUPPORT">SUPPORT (Spices/Oil/Salt)</option>
+                        <option value="MAIN">मुख्य (प्राथमिक धान्य)</option>
+                        <option value="SUPPORT">सहाय्यक (मसाले/तेल/मीठ)</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Unit</label>
+                    <label class="form-label">एकक</label>
                     <select name="unit" id="edit_unit" class="form-select" required>
-                        <option value="kg">kg</option>
-                        <option value="gm">gm</option>
-                        <option value="ltr">ltr</option>
+                        <option value="kg">किलो</option>
+                        <option value="gm">ग्रॅम</option>
+                        <option value="ltr">लिटर</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update Item</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
+                <button type="submit" class="btn btn-primary">अपडेट करा</button>
             </div>
         </form>
     </div>

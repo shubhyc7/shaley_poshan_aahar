@@ -3,9 +3,9 @@
 
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-plus-circle me-2"></i>Daily Multi-Item Entry</h5>
+        <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-plus-circle me-2"></i>दैनंदिन बहु-वस्तू नोंद</h5>
         <a href="<?= base_url('Entries/export') ?>" class="btn btn-success btn-sm">
-            <i class="fas fa-file-excel"></i> Export to Excel
+            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
         </a>
     </div>
 
@@ -22,17 +22,17 @@
                 <table class="table table-bordered align-middle mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th style="min-width: 140px;">Date </th>
-                            <th style="min-width: 140px;">Category </th>
-                            <th style="width: 100px;">Total</th>
-                            <th style="width: 100px;">Present</th>
+                            <th style="min-width: 140px;">तारीख</th>
+                            <th style="min-width: 140px;">श्रेणी</th>
+                            <th style="width: 100px;">एकूण</th>
+                            <th style="width: 100px;">उपस्थित</th>
                             <?php foreach ($main_items as $mi) : ?>
                                 <th class="text-center bg-primary small"><?= $mi['item_name'] ?></th>
                             <?php endforeach; ?>
                             <?php foreach ($support_items as $si) : ?>
                                 <th class="text-center bg-secondary small"><?= $si['item_name'] ?></th>
                             <?php endforeach; ?>
-                            <th class="text-center">Action</th>
+                            <th class="text-center">क्रिया</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,13 +73,13 @@
                             <?php endforeach; ?>
 
                             <td class="text-center">
-                                <button type="submit" class="btn btn-success btn-sm px-3">Save</button>
+                                <button type="submit" class="btn btn-success btn-sm px-3">जतन करा</button>
                             </td>
                         </tr>
 
                         <?php if (empty($entries)) : ?>
                             <tr>
-                                <td colspan="<?= (count($main_items) + count($support_items) + 3) ?>" class="text-center py-3 text-muted">No entries found for this month.</td>
+                                <td colspan="<?= (count($main_items) + count($support_items) + 3) ?>" class="text-center py-3 text-muted">या महिन्यासाठी कोणतीही नोंद आढळली नाही.</td>
                             </tr>
                         <?php else : ?>
                             <?php
@@ -90,7 +90,7 @@
                                         <div class="fw-bold"><?= date('d-M-Y', strtotime($row['entry_date'])) ?></div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-dark border" style="font-size: 0.65rem;">Class <?= $row['category'] ?></span>
+                                        <span class="badge bg-light text-dark border" style="font-size: 0.65rem;">इयत्ता <?= $row['category'] ?></span>
                                     </td>
                                     <td class="text-center fw-bold text-muted small"><?= $row['total_students'] ?></td>
                                     <td class="text-center fw-bold text-muted small"><?= $row['present_students'] ?></td>
@@ -117,7 +117,7 @@
                                     <?php endforeach; ?>
 
                                     <td class="text-center">
-                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="text-danger" onclick="return confirm('Delete this entry?')">
+                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="text-danger" onclick="return confirm('ही नोंद हटवायची?')">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </td>
@@ -206,7 +206,7 @@
         $('#entryForm').on('submit', function(e) {
             if ($('.main-item-chk:checked').length === 0) {
                 e.preventDefault();
-                alert("Please select at least one Main Item (Rice, Dal, etc.)");
+                alert("कृपया किमान एक मुख्य वस्तू (तांदूळ, डाळ, इ.) निवडा");
             }
         });
     });

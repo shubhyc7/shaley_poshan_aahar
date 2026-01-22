@@ -5,7 +5,7 @@
     <div class="card-body">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-md-3">
-                <label class="form-label small fw-bold text-uppercase">Month</label>
+                <label class="form-label small fw-bold text-uppercase">महिना</label>
                 <select name="month" class="form-select">
                     <?php for ($m = 1; $m <= 12; $m++) : ?>
                         <option value="<?= $m ?>" <?= $m == $month ? 'selected' : '' ?>><?= date("F", mktime(0, 0, 0, $m, 10)) ?></option>
@@ -13,18 +13,18 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label small fw-bold text-uppercase">Year</label>
+                <label class="form-label small fw-bold text-uppercase">वर्ष</label>
                 <input type="number" name="year" class="form-control" value="<?= $year ?>">
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-dark w-100">Filter</button>
+                <button type="submit" class="btn btn-dark w-100">फिल्टर</button>
             </div>
             <div class="col-md-5 text-end">
                 <a href="<?= base_url('Stock/export?month=' . $month . '&year=' . $year) ?>" class="btn btn-success me-2">
-                    <i class="fas fa-file-excel"></i> Export to Excel
+                    <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
                 </a>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
-                    <i class="fas fa-plus"></i> Update Stock
+                    <i class="fas fa-plus"></i> स्टॉक अपडेट करा
                 </button>
             </div>
         </form>
@@ -35,11 +35,11 @@
     <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
             <tr>
-                <th>Item Name</th>
-                <th>Opening</th>
-                <th>Received (+)</th>
-                <th>Used (-)</th>
-                <th class="text-primary">Remaining</th>
+                <th>वस्तूचे नाव</th>
+                <th>प्रारंभिक</th>
+                <th>मिळाले (+) </th>
+                <th>वापरले (-)</th>
+                <th class="text-primary">उरलेले</th>
             </tr>
         </thead>
         <tbody>
@@ -60,30 +60,30 @@
     <div class="modal-dialog">
         <form action="<?= base_url('Stock/store') ?>" method="POST" class="modal-content">
             <div class="modal-header">
-                <h5>Update Monthly Stock</h5>
+                <h5>मासिक स्टॉक अपडेट करा</h5>
             </div>
             <div class="modal-body">
                 <input type="hidden" name="month" value="<?= $month ?>">
                 <input type="hidden" name="year" value="<?= $year ?>">
                 <div class="mb-3">
-                    <label>Item</label>
+                    <label>वस्तू</label>
                     <select name="item_id" class="form-select" id="stock_item_id" required>
-                        <option value="">Select Item</option>
+                        <option value="">वस्तू निवडा</option>
                         <?php foreach ($items as $item) : ?>
                             <option value="<?= $item['id'] ?>"><?= $item['item_name'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="row">
-                    <div class="col-6 mb-3"><label>Opening Stock</label><input type="number" step="0.001" name="opening_stock" class="form-control" required></div>
-                    <div class="col-6 mb-3"><label>Received Stock</label><input type="number" step="0.001" name="received_stock" class="form-control" value="0"></div>
+                    <div class="col-6 mb-3"><label>प्रारंभिक स्टॉक</label><input type="number" step="0.001" name="opening_stock" class="form-control" required></div>
+                    <div class="col-6 mb-3"><label>मिळालेला स्टॉक</label><input type="number" step="0.001" name="received_stock" class="form-control" value="0"></div>
                 </div>
                 <div class="mb-3">
-                    <label>Used Stock (Auto-filled from entries)</label>
+                    <label>वापरलेला स्टॉक (नोंदीवरून स्वयं-भरलेला)</label>
                     <input type="number" step="0.001" name="used_stock" id="auto_used" class="form-control bg-light" readonly>
                 </div>
             </div>
-            <div class="modal-footer"><button type="submit" class="btn btn-primary w-100">Save Stock Record</button></div>
+            <div class="modal-footer"><button type="submit" class="btn btn-primary w-100">जतन करा</button></div>
         </form>
     </div>
 </div>
