@@ -82,7 +82,7 @@
 <div class="modal fade" id="addItemModal" tabindex="-1">
     <div class="modal-dialog">
         <form action="<?= base_url('items/store') ?>" method="POST" class="modal-content">
-            <div class="modal-header bg-warning">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">नवीन वस्तू जोडा</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -145,7 +145,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
-                <button type="submit" class="btn btn-primary">अपडेट करा</button>
+                <button type="submit" class="btn btn-warning">अपडेट करा</button>
             </div>
         </form>
     </div>

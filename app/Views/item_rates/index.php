@@ -76,7 +76,7 @@
 <div class="modal fade" id="rateModal" tabindex="-1">
     <div class="modal-dialog">
         <form action="<?= base_url('ItemRates/store') ?>" method="POST" class="modal-content">
-            <div class="modal-header bg-warning">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">वापर दर सेट करा</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -147,7 +147,7 @@
                     <div class="col-6"><label>वर्ष</label><input type="number" name="year" id="edit_year" class="form-control"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="submit" class="btn btn-success w-100">अपडेट करा</button></div>
+            <div class="modal-footer"><button type="submit" class="btn btn-warning w-100">अपडेट करा</button></div>
         </form>
     </div>
 </div>

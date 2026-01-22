@@ -43,10 +43,11 @@
     <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
             <tr>
+                <th>तारीख</th>
                 <th>वस्तूचे नाव</th>
-                <th>प्रारंभिक (Monthly Opening)</th>
-                <th>मिळालेला (Monthly Received)</th>
-                <th>वापरलेला (Monthly Used)</th>
+                <th>प्रारंभिक (Opening)</th>
+                <th>मिळालेला (Received)</th>
+                <th>वापरलेला (Used)</th>
                 <th class="text-primary">शिल्लक (Closing)</th>
                 <th class="text-center">Action</th>
             </tr>
@@ -54,6 +55,7 @@
         <tbody>
             <?php foreach ($stock as $row) : ?>
                 <tr>
+                    <td><small class="text-muted"><i class="far fa-calendar-alt"></i> <?= date('d-m-Y', strtotime($row['stock_date'])) ?></small></td>
                     <td><strong><?= $row['item_name'] ?></strong></td>
                     <td><?= number_format($row['opening_stock'], 3) ?></td>
                     <td class="text-success">+ <?= number_format($row['received_stock'], 3) ?></td>
