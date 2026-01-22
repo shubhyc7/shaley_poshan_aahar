@@ -25,9 +25,9 @@
         <table class="table table-hover">
             <thead class="table-light">
                 <tr>
-                    <th>आयडी</th>
+                    <th>क्रमांक</th>
                     <th>वस्तूचे नाव</th>
-                    <th>श्रेणी</th>
+                    <th>वस्तूचा प्रकार</th>
                     <th>एकक</th>
                     <th>क्रिया</th>
                 </tr>
@@ -39,10 +39,22 @@
                         <td><strong><?= $item['item_name'] ?></strong></td>
                         <td>
                             <span class="badge <?= $item['item_type'] == 'MAIN' ? 'bg-info' : 'bg-secondary' ?>">
-                                <?= $item['item_type'] ?>
+                                <?= $item['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक'; ?>
                             </span>
                         </td>
-                        <td><?= $item['unit'] ?></td>
+                        <td>
+                            <?php
+                            if ($item['unit'] == 'kg') {
+                                echo 'किलो (किलोग्रॅम)';
+                            }
+                            if ($item['unit'] == 'gm') {
+                                echo 'ग्रॅम';
+                            }
+                            if ($item['unit'] == 'ltr') {
+                                echo 'लिटर';
+                            }
+                            ?>
+                        </td>
                         <td>
                             <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-id="<?= $item['id'] ?>">
                                 <i class="fas fa-edit"></i>
@@ -69,7 +81,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">वस्तूचे नाव</label>
-                    <input type="text" name="item_name" class="form-control" placeholder="उदा. तांदूळ, मूग डाळ, मीठ" required>
+                    <input type="text" name="item_name" class="form-control marathi_convert" placeholder="उदा. तांदूळ, मूग डाळ, मीठ" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">वस्तूचा प्रकार</label>
@@ -105,7 +117,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">वस्तूचे नाव</label>
-                    <input type="text" name="item_name" id="edit_item_name" class="form-control" required>
+                    <input type="text" name="item_name" id="edit_item_name" class="form-control marathi_convert" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">वस्तूचा प्रकार</label>
@@ -160,6 +172,44 @@
                 }
             });
         });
+    });
+
+    $('.marathi_convert').on('keydown', function(e) {
+        if (e.keyCode === 32) { // Space bar
+            let $this = $(this);
+            let content = $this.val();
+            let cursorPosition = this.selectionStart;
+
+            // Get text before cursor
+            let textBeforeCursor = content.substring(0, cursorPosition);
+            let words = textBeforeCursor.split(/\s+/);
+            let lastWord = words[words.length - 1];
+
+            if (lastWord.length > 0) {
+                e.preventDefault(); // Stop space from jumping ahead before translation
+
+                $.get('https://inputtools.google.com/request', {
+                    text: lastWord,
+                    itc: 'mr-t-i0-und',
+                    num: 1
+                }, function(response) {
+                    if (response[0] === 'SUCCESS') {
+                        let marathiWord = response[1][0][1][0];
+                        let textAfterCursor = content.substring(cursorPosition);
+
+                        // Reconstruct the string: TextBeforeLastWord + MarathiWord + Space + TextAfter
+                        let prefix = textBeforeCursor.substring(0, textBeforeCursor.lastIndexOf(lastWord));
+                        let newValue = prefix + marathiWord + " " + textAfterCursor;
+
+                        $this.val(newValue);
+
+                        // Move cursor to correct position after the new space
+                        let newCursorPos = prefix.length + marathiWord.length + 1;
+                        $this[0].setSelectionRange(newCursorPos, newCursorPos);
+                    }
+                });
+            }
+        }
     });
 </script>
 
