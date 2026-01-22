@@ -102,9 +102,9 @@ class StudentStrength extends BaseController
         // Set response headers
         $filename = 'Student_Strength_' . date('Y-m-d_His') . '.xlsx';
         
-        $this->response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $this->response->setHeader('Content-Disposition', 'attachment;filename="' . $filename . '"');
-        $this->response->setHeader('Cache-Control', 'max-age=0');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
 
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
