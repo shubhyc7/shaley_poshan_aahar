@@ -16,21 +16,37 @@ class Stock extends BaseController
     {
         $stockModel = new StockModel();
         $itemModel  = new ItemModel();
-        $entryModel = new EntryModel();
 
         $month = $this->request->getGet('month') ?? date('n');
         $year  = $this->request->getGet('year') ?? date('Y');
 
-        // Logic: Calculate total used from daily entries for this month
-        $usedData = $entryModel->select('item_id, SUM(qty) as total_used')
+        $db = \Config\Database::connect();
+
+        // 1. Get usage from Main Items (Rice/Dal)
+        $mainUsed = $db->table('daily_aahar_entries')
+            ->select('item_id, SUM(qty) as total')
             ->where('month', $month)->where('year', $year)
-            ->groupBy('item_id')->findAll();
+            ->groupBy('item_id')->get()->getResultArray();
+
+        // 2. Get usage from Support Items (Oil/Salt)
+        // Note: Joining with daily_aahar_entries to filter by month/year
+        $supportUsed = $db->table('daily_aahar_entries_support_items')
+            ->select('support_item_id as item_id, SUM(qty) as total')
+            ->where('month(entry_date)', $month)
+            ->where('year(entry_date)', $year)
+            ->groupBy('support_item_id')->get()->getResultArray();
+
+        // Merge both usage arrays
+        $usedLookup = [];
+        foreach (array_merge($mainUsed, $supportUsed) as $u) {
+            $usedLookup[$u['item_id']] = ($usedLookup[$u['item_id']] ?? 0) + $u['total'];
+        }
 
         $data['stock'] = $stockModel->getStockWithItems($month, $year);
         $data['items'] = $itemModel->findAll();
         $data['month'] = $month;
         $data['year']  = $year;
-        $data['used_lookup'] = array_column($usedData, 'total_used', 'item_id');
+        $data['used_lookup'] = $usedLookup;
 
         return view('stock/index', $data);
     }
@@ -39,22 +55,54 @@ class Stock extends BaseController
     {
         $model = new StockModel();
         $itemId = $this->request->getPost('item_id');
-        $opening = $this->request->getPost('opening_stock');
-        $received = $this->request->getPost('received_stock');
-        $used = $this->request->getPost('used_stock') ?? 0;
+        $month = $this->request->getPost('month');
+        $year = $this->request->getPost('year');
 
-        $model->save([
+        $opening = (float)$this->request->getPost('opening_stock');
+        $received = (float)$this->request->getPost('received_stock');
+        $used = (float)$this->request->getPost('used_stock');
+
+        // Check if stock record already exists for this item/month/year
+        $existing = $model->where(['item_id' => $itemId, 'month' => $month, 'year' => $year])->first();
+
+        $saveData = [
             'item_id'         => $itemId,
             'opening_stock'   => $opening,
             'received_stock'  => $received,
             'used_stock'      => $used,
             'remaining_stock' => ($opening + $received) - $used,
-            'month'           => $this->request->getPost('month'),
-            'year'            => $this->request->getPost('year'),
-        ]);
+            'month'           => $month,
+            'year'            => $year,
+        ];
 
+        if ($existing) {
+            $model->update($existing['id'], $saveData);
+        } else {
+            $model->save($saveData);
+        }
 
-        return redirect()->to('/stock')->with('status', 'Stock Updated Successfully');
+        return redirect()->to(base_url("Stock?month=$month&year=$year"))->with('status', 'Stock Updated Successfully');
+    }
+
+    // Fetch single stock record for Edit Modal
+    public function edit($id)
+    {
+        $model = new StockModel();
+        $data = $model->find($id);
+        return $this->response->setJSON($data);
+    }
+
+    // Delete stock record
+    public function delete($id)
+    {
+        $model = new StockModel();
+        $month = $this->request->getGet('month');
+        $year = $this->request->getGet('year');
+
+        $model->delete($id);
+
+        return redirect()->to(base_url("Stock?month=$month&year=$year"))
+            ->with('status', 'Stock Record Deleted');
     }
 
     public function export()
