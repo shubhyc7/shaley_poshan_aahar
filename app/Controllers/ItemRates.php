@@ -20,7 +20,7 @@ class ItemRates extends BaseController
         $filterMonth = $this->request->getGet('month') ?? date('n');
         $filterYear  = $this->request->getGet('year') ?? date('Y');
         // Build the query
-        $query = $rateModel->select('item_rates.*, items.item_name, items.unit')
+        $query = $rateModel->select('item_rates.*, items.item_name, items.unit,items.item_type')
             ->join('items', 'items.id = item_rates.item_id')
             ->where('item_rates.is_disable', 0);
 

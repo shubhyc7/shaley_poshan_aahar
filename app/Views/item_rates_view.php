@@ -56,6 +56,7 @@
                 <tr>
                     <th>क्रमांक</th>
                     <th>वस्तू</th>
+                    <th>वस्तूचा प्रकार</th>
                     <th>इयत्ता</th>
                     <th>महिना/वर्ष</th>
                     <th>प्रति विद्यार्थी प्रमाण</th>
@@ -68,6 +69,11 @@
                     <tr>
                         <td><strong><?= $rate['id'] ?></strong></td>
                         <td><strong><?= $rate['item_name'] ?></strong></td>
+                        <td>
+                            <span class="badge <?= $rate['item_type'] == 'MAIN' ? 'bg-info' : 'bg-secondary' ?>">
+                                <?= $rate['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक'; ?>
+                            </span>
+                        </td>
                         <td><span class="badge bg-info text-dark">इयत्ता <?= $rate['category'] ?></span></td>
                         <td><?= date("M", mktime(0, 0, 0, $rate['month'], 10)) ?> <?= $rate['year'] ?></td>
                         <td><?= number_format($rate['per_student_qty'], 3) ?></td>

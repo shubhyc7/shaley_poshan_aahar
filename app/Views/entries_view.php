@@ -51,8 +51,8 @@
 
                             <td>
                                 <select id="category" name="category" class="form-select form-select-sm">
-                                    <option value="5-8">5-8</option>
-                                    <option value="8-10">8-10</option>
+                                    <option value="6-8">6-8</option>
+                                    <option value="9-10">9-10</option>
                                 </select>
                                 <input type="hidden" name="student_strength" id="student_strength_val">
                             </td>
