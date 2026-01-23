@@ -4,7 +4,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class EntryModel extends Model
+class DailyAaharEntriesModel extends Model
 {
     protected $table      = 'daily_aahar_entries';
     protected $primaryKey = 'id';

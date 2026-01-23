@@ -2,11 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Models\EntryModel;
+use App\Models\DailyAaharEntriesModel;
 use App\Models\ItemModel;
-use App\Models\RateModel;
 use App\Models\StudentStrengthModel;
-use App\Models\SupportEntryModel;
+use App\Models\DailyAaharEntriesItemsModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -18,19 +17,25 @@ class Entries extends BaseController
     public function index()
     {
         $itemModel = new ItemModel();
-        $entryModel = new EntryModel();
-        $db = \Config\Database::connect();
+        $DailyAaharEntriesModel = new DailyAaharEntriesModel();
+
+        // 1. Capture Filter Values
+        $filterMonth = $this->request->getGet('month') ?? date('n');
+        $filterYear  = $this->request->getGet('year') ?? date('Y');
 
         $data['main_items'] = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
         $data['support_items'] = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
 
-        // Grouping logic: Get unique date/category combinations
-        // We fetch the basic info and we will lookup specific item quantities in the view
-        $data['entries'] = $entryModel->select('entry_date, category, present_students, total_students, MAX(id) as group_id')
-            ->where('is_disable', 0)
-            ->groupBy('entry_date, category')
+        // 2. Filter Parent Entries by Month and Year
+        $data['entries'] = $DailyAaharEntriesModel->where('is_disable', 0)
+            ->where('MONTH(entry_date)', $filterMonth)
+            ->where('YEAR(entry_date)', $filterYear)
             ->orderBy('entry_date', 'DESC')
             ->findAll();
+
+        // Pass filters back to the view
+        $data['filterMonth'] = $filterMonth;
+        $data['filterYear']  = $filterYear;
 
         return view('entries_view', $data);
     }
@@ -38,14 +43,13 @@ class Entries extends BaseController
     // store
     public function store()
     {
-        $entryModel = new EntryModel();
-        $supportModel = new SupportEntryModel(); // Ensure this model points to daily_aahar_entries_support_items
+        $entryModel = new DailyAaharEntriesModel();
+        $itemsModel = new DailyAaharEntriesItemsModel();
 
         $date = $this->request->getPost('entry_date');
         $category = $this->request->getPost('category');
 
-        // 1. DUPLICATE ENTRY VALIDATION
-        // Prevent multiple entries for the same Class Category on the same Date
+        // 1. Duplicate Validation
         $existing = $entryModel->where([
             'entry_date' => $date,
             'category'   => $category,
@@ -53,54 +57,59 @@ class Entries extends BaseController
         ])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "Class $category record for this date already exists!");
+            return redirect()->back()->withInput()->with('error', "इयत्ता $category साठी या तारखेची नोंद आधीच अस्तित्वात आहे!");
         }
 
+        // 2. Insert Parent Entry
+        $mainData = [
+            'category'         => $category,
+            'entry_date'       => $date,
+            'total_students'   => $this->request->getPost('student_strength'),
+            'present_students' => $this->request->getPost('present_students'),
+            'is_disable'       => 0
+        ];
+
+        $entryModel->insert($mainData);
+        $parentId = $entryModel->getInsertID();
+
+        // 3. Insert Main Items (Checked ones)
         $main_item_ids = $this->request->getPost('main_item_id');
         $main_qtys = $this->request->getPost('main_item_qty');
 
-        if (empty($main_item_ids)) {
-            return redirect()->back()->withInput()->with('error', "Please select at least one Main Item.");
-        }
-
-        // Loop through selected Main Items (e.g., Rice and Dal)
-        foreach ($main_item_ids as $idx => $m_id) {
-            $mainData = [
-                'entry_date'       => $date,
-                'category'         => $category,
-                'total_students'   => $this->request->getPost('student_strength'),
-                'present_students' => $this->request->getPost('present_students'),
-                'item_id'          => $m_id,
-                'qty'              => $main_qtys[$idx],
-                'month'            => date('n', strtotime($date)),
-                'year'             => date('Y', strtotime($date)),
-                'is_disable'       => 0
-            ];
-
-            $entryModel->insert($mainData);
-            $lastMainId = $entryModel->getInsertID();
-
-            // 2. Save Support Items (Oil, Salt, etc.) ONLY for the first main item loop
-            // This prevents duplicating ingredient consumption if two main items are served.
-            if ($idx === 0) {
-                $s_ids = $this->request->getPost('support_item_id');
-                $s_qtys = $this->request->getPost('support_qty');
-                if ($s_ids) {
-                    foreach ($s_ids as $s_idx => $sid) {
-                        if ($s_qtys[$s_idx] > 0) {
-                            $supportModel->save([
-                                'main_entry_id'   => $lastMainId,
-                                'entry_date'      => $date,
-                                'support_item_id' => $sid,
-                                'qty'             => $s_qtys[$s_idx],
-                                'is_disable'      => 0
-                            ]);
-                        }
-                    }
+        if ($main_item_ids) {
+            foreach ($main_item_ids as $idx => $mid) {
+                // Since checkboxes only send values for checked items, 
+                // we need to find the correct qty based on item ID index logic
+                // usually better to use item ID as key in HTML: main_item_qty[ID]
+                if ($main_qtys[$idx] > 0) {
+                    $itemsModel->insert([
+                        'daily_aahar_entries_id' => $parentId,
+                        'item_id'                => $mid,
+                        'qty'                    => $main_qtys[$idx],
+                        'is_disable'             => 0
+                    ]);
                 }
             }
         }
-        return redirect()->to('/entries')->with('status', 'Entries saved successfully!');
+
+        // 4. Insert Support Items
+        $support_ids = $this->request->getPost('support_item_id');
+        $support_qtys = $this->request->getPost('support_qty');
+
+        if ($support_ids) {
+            foreach ($support_ids as $idx => $sid) {
+                if ($support_qtys[$idx] > 0) {
+                    $itemsModel->insert([
+                        'daily_aahar_entries_id' => $parentId,
+                        'item_id'                => $sid,
+                        'qty'                    => $support_qtys[$idx],
+                        'is_disable'             => 0
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->to('/entries')->with('status', 'नोंद यशस्वीरित्या जतन केली!');
     }
 
     // getStrengthAjax
@@ -141,136 +150,119 @@ class Entries extends BaseController
     }
 
     // delete_session
-    public function delete_session($hexDate, $category)
+    public function delete($id)
     {
-        $date = hex2bin($hexDate); // Decode date safely from URL
         $db = \Config\Database::connect();
 
-        // Soft delete all main items for this session
+        // 1. Soft delete the main parent entry
         $db->table('daily_aahar_entries')
-            ->where(['entry_date' => $date, 'category' => $category])
+            ->where('id', $id)
             ->update(['is_disable' => 1]);
 
-        // Soft delete support items linked to these records
-        // Logic: find IDs first then update support table
-        $mainIds = $db->table('daily_aahar_entries')
-            ->select('id')
-            ->where(['entry_date' => $date, 'category' => $category])
-            ->get()->getResultArray();
+        // 2. Soft delete all items (Main & Support) linked to this parent ID
+        // This targets your new 'daily_aahar_entries_items' table
+        $db->table('daily_aahar_entries_items')
+            ->where('daily_aahar_entries_id', $id)
+            ->update(['is_disable' => 1]);
 
-        if (!empty($mainIds)) {
-            $ids = array_column($mainIds, 'id');
-            $db->table('daily_aahar_entries_support_items')
-                ->whereIn('main_entry_id', $ids)
-                ->update(['is_disable' => 1]);
-        }
-
-        return redirect()->to('/entries')->with('status', 'सत्रातील सर्व नोंदी यशस्वीरित्या हटवल्या.');
+        return redirect()->to('/entries')->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली.');
     }
 
     // export
     public function export()
     {
-        $entryModel = new EntryModel();
-        $itemModel = new ItemModel();
+        $DailyAaharEntriesModel = new \App\Models\DailyAaharEntriesModel();
+        $itemModel = new \App\Models\ItemModel();
         $db = \Config\Database::connect();
 
-        // Export only active entries
-        $entries = $entryModel->select('daily_aahar_entries.*, items.item_name as main_item_name, items.unit as main_item_unit')
-            ->join('items', 'items.id = daily_aahar_entries.item_id', 'left')
-            ->where('daily_aahar_entries.is_disable', 0)
-            ->orderBy('entry_date', 'DESC')
+        // Capture filters from the URL
+        $month = $this->request->getGet('month') ?? date('n');
+        $year  = $this->request->getGet('year') ?? date('Y');
+
+        // 1. Fetch Filtered Parent Entries
+        $entries = $DailyAaharEntriesModel->where('is_disable', 0)
+            ->where('MONTH(entry_date)', $month)
+            ->where('YEAR(entry_date)', $year)
+            ->orderBy('entry_date', 'ASC')
             ->findAll();
 
+        // 2. Fetch all Item Masters (to create columns)
+        $mainItems = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
         $supportItems = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set headers
-        $colIndex = 0;
-        $headers = ['Date', 'Category', 'Total Students', 'Present Students', 'Main Item', 'Main Qty', 'Unit'];
-        foreach ($headers as $header) {
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . '1', $header);
-            $colIndex++;
-        }
+        // 3. Set Dynamic Headers
+        $headers = ['Date', 'Category', 'Total Students', 'Present Students'];
 
-        // Add support item headers
+        // Add Main Item names to header list
+        foreach ($mainItems as $mi) {
+            $headers[] = $mi['item_name'];
+        }
+        // Add Support Item names to header list
         foreach ($supportItems as $si) {
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . '1', $si['item_name']);
+            $headers[] = $si['item_name'];
+        }
+
+        $colIndex = 1;
+        foreach ($headers as $headerText) {
+            $colLetter = $this->getColumnLetter($colIndex);
+            $sheet->setCellValue($colLetter . '1', $headerText);
             $colIndex++;
         }
 
-        // Calculate last column (7 base columns + support items)
-        $totalCols = $colIndex;
-        $lastCol = $this->getColumnLetter($totalCols);
-        $headerRange = 'A1:' . $lastCol . '1';
-
-        $headerStyle = [
+        // Header Styling
+        $lastCol = $this->getColumnLetter(count($headers));
+        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '4472C4']
-            ],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-        ];
-        $sheet->getStyle($headerRange)->applyFromArray($headerStyle);
+        ]);
 
-        // Add data
-        $row = 2;
+        // 4. Fill Data Rows
+        $rowNum = 2;
         foreach ($entries as $entry) {
-            $colIndex = 0;
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, date('d-M-Y', strtotime($entry['entry_date'])));
-            $colIndex++;
+            // Fetch all item quantities for this specific entry ID
+            $childItems = $db->table('daily_aahar_entries_items')
+                ->where(['daily_aahar_entries_id' => $entry['id'], 'is_disable' => 0])
+                ->get()->getResultArray();
 
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, 'Class ' . $entry['category']);
-            $colIndex++;
+            // Create a lookup map [item_id => qty]
+            $itemQtyMap = array_column($childItems, 'qty', 'item_id');
 
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, $entry['total_students']);
-            $colIndex++;
+            // Static Columns
+            $sheet->setCellValue('A' . $rowNum, date('d-M-Y', strtotime($entry['entry_date'])));
+            $sheet->setCellValue('B' . $rowNum, 'Class ' . $entry['category']);
+            $sheet->setCellValue('C' . $rowNum, $entry['total_students']);
+            $sheet->setCellValue('D' . $rowNum, $entry['present_students']);
 
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, $entry['present_students']);
-            $colIndex++;
+            $currentCol = 5;
 
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, $entry['main_item_name'] ?? 'N/A');
-            $colIndex++;
-
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, number_format($entry['qty'], 3));
-            $colIndex++;
-
-            $col = $this->getColumnLetter($colIndex + 1);
-            $sheet->setCellValue($col . $row, $entry['main_item_unit'] ?? '');
-            $colIndex++;
-
-            // Add support items data
-            foreach ($supportItems as $si) {
-                $supportEntry = $db->table('daily_aahar_entries_support_items')
-                    ->where(['main_entry_id' => $entry['id'], 'support_item_id' => $si['id'], 'is_disable' => '0'])
-                    ->get()->getRow();
-                $col = $this->getColumnLetter($colIndex + 1);
-                $sheet->setCellValue($col . $row, $supportEntry ? number_format($supportEntry->qty, 3) : '0.000');
-                $colIndex++;
+            // Dynamic Main Item Columns
+            foreach ($mainItems as $mi) {
+                $qty = $itemQtyMap[$mi['id']] ?? 0;
+                $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, number_format($qty, 3));
+                $currentCol++;
             }
-            $row++;
+
+            // Dynamic Support Item Columns
+            foreach ($supportItems as $si) {
+                $qty = $itemQtyMap[$si['id']] ?? 0;
+                $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, number_format($qty, 3));
+                $currentCol++;
+            }
+
+            $rowNum++;
         }
 
-        // Auto-size columns
-        for ($i = 1; $i <= $totalCols; $i++) {
-            $col = $this->getColumnLetter($i);
-            $sheet->getColumnDimension($col)->setAutoSize(true);
+        // Auto-size all columns
+        for ($i = 1; $i < $currentCol; $i++) {
+            $sheet->getColumnDimension($this->getColumnLetter($i))->setAutoSize(true);
         }
 
-        // Set response headers
-        $filename = 'Daily_Entries_' . date('Y-m-d_His') . '.xlsx';
-
+        // 5. Export File
+        $filename = 'Aahar_Register_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
