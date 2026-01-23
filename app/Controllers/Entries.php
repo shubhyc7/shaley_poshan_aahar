@@ -14,45 +14,28 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class Entries extends BaseController
 {
+    // entries_view
     public function index()
     {
         $itemModel = new ItemModel();
         $entryModel = new EntryModel();
+        $db = \Config\Database::connect();
 
         $data['main_items'] = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
         $data['support_items'] = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
 
-        // Fetch only active history entries
-        $data['entries'] = $entryModel->select('daily_aahar_entries.*, items.item_name')
-            ->join('items', 'items.id = daily_aahar_entries.item_id')
-            ->where('daily_aahar_entries.is_disable', 0)
+        // Grouping logic: Get unique date/category combinations
+        // We fetch the basic info and we will lookup specific item quantities in the view
+        $data['entries'] = $entryModel->select('entry_date, category, present_students, total_students, MAX(id) as group_id')
+            ->where('is_disable', 0)
+            ->groupBy('entry_date, category')
             ->orderBy('entry_date', 'DESC')
             ->findAll();
 
-        return view('entries/index', $data);
+        return view('entries_view', $data);
     }
 
-    public function create()
-    {
-        $itemModel = new ItemModel();
-        $rateModel = new RateModel();
-        $strengthModel = new StudentStrengthModel();
-
-        $month = date('n');
-        $year = date('Y');
-
-        // Get total students registered for this month
-        $strength = $strengthModel->where(['month' => $month, 'year' => $year])->first();
-
-        $data['total_enrolled'] = $strength['total_students'] ?? 0;
-        $data['main_items'] = $itemModel->where('item_type', 'MAIN')->findAll();
-
-        // Get rates for calculation (Main items and Support items)
-        $data['rates'] = json_encode($rateModel->where(['month' => $month, 'year' => $year])->findAll());
-
-        return view('entries/create', $data);
-    }
-
+    // store
     public function store()
     {
         $entryModel = new EntryModel();
@@ -120,25 +103,7 @@ class Entries extends BaseController
         return redirect()->to('/entries')->with('status', 'Entries saved successfully!');
     }
 
-
-    public function calculateAjax()
-    {
-        $date = $this->request->getPost('date');
-        $present = (int)$this->request->getPost('present');
-        $mainItemId = $this->request->getPost('main_item_id');
-        $category = $this->request->getPost('category'); // '5-8' or '8-10'
-
-        $rateModel = new RateModel();
-        // Fetch rates specifically for the selected category
-        $rates = $rateModel->where([
-            'month'    => date('n', strtotime($date)),
-            'year'     => date('Y', strtotime($date)),
-            'category' => $category
-        ])->findAll();
-
-        // ... same calculation logic as before ...
-    }
-
+    // getStrengthAjax
     public function getStrengthAjax()
     {
         $date = $this->request->getPost('date');
@@ -152,6 +117,7 @@ class Entries extends BaseController
         return $this->response->setJSON(['total' => $strength['total_students'] ?? 0]);
     }
 
+    // calculate
     public function calculate()
     {
         $date = $this->request->getPost('date');
@@ -174,30 +140,35 @@ class Entries extends BaseController
         return $this->response->setJSON(['rates' => $all_calculated]);
     }
 
-    // SOFT DELETE: Update is_disable to 1
-    public function delete($id)
+    // delete_session
+    public function delete_session($hexDate, $category)
     {
-        $entryModel = new EntryModel();
+        $date = hex2bin($hexDate); // Decode date safely from URL
         $db = \Config\Database::connect();
 
-        $entry = $entryModel->find($id);
+        // Soft delete all main items for this session
+        $db->table('daily_aahar_entries')
+            ->where(['entry_date' => $date, 'category' => $category])
+            ->update(['is_disable' => 1]);
 
-        if ($entry) {
-            // 1. Soft delete the support items using Query Builder 
-            // This avoids the "No data to update" exception even if no support items exist
+        // Soft delete support items linked to these records
+        // Logic: find IDs first then update support table
+        $mainIds = $db->table('daily_aahar_entries')
+            ->select('id')
+            ->where(['entry_date' => $date, 'category' => $category])
+            ->get()->getResultArray();
+
+        if (!empty($mainIds)) {
+            $ids = array_column($mainIds, 'id');
             $db->table('daily_aahar_entries_support_items')
-                ->where('main_entry_id', $id)
+                ->whereIn('main_entry_id', $ids)
                 ->update(['is_disable' => 1]);
-
-            // 2. Soft delete the main entry using the Model's primary key method
-            $entryModel->update($id, ['is_disable' => 1]);
-
-            return redirect()->to('/entries')->with('status', 'Entry archived successfully.');
-        } else {
-            return redirect()->to('/entries')->with('error', 'Record not found.');
         }
+
+        return redirect()->to('/entries')->with('status', 'सत्रातील सर्व नोंदी यशस्वीरित्या हटवल्या.');
     }
 
+    // export
     public function export()
     {
         $entryModel = new EntryModel();

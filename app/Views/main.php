@@ -69,11 +69,11 @@
                             <i class="fas fa-box me-1"></i> स्टॉक
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link text-warning fw-bold" href="<?= base_url('reports') ?>">
                             <i class="fas fa-file-alt me-1"></i> मासिक अहवाल
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
         </div>

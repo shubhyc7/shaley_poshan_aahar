@@ -10,14 +10,16 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class Items extends BaseController
 {
+    // items_view
     public function index()
     {
         $model = new ItemModel();
         // Only show active items
         $data['items'] = $model->getActive()->findAll();
-        return view('items/index', $data);
+        return view('items_view', $data);
     }
 
+    // store
     public function store()
     {
         $model = new ItemModel();
@@ -43,6 +45,7 @@ class Items extends BaseController
         return redirect()->to('/items')->with('status', 'Item Added Successfully');
     }
 
+    // edit
     public function edit($id)
     {
         $model = new ItemModel();
@@ -50,6 +53,7 @@ class Items extends BaseController
         return $this->response->setJSON($data);
     }
 
+    // update
     public function update($id)
     {
         $model = new ItemModel();
@@ -85,6 +89,7 @@ class Items extends BaseController
         return redirect()->to('/items')->with('status', 'Item Deleted Successfully (Archived)');
     }
 
+    // export
     public function export()
     {
         $model = new ItemModel();

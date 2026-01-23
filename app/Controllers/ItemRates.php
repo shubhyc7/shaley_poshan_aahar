@@ -11,6 +11,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class ItemRates extends BaseController
 {
+    // item_rates_view
     public function index()
     {
         $rateModel = new RateModel();
@@ -20,9 +21,10 @@ class ItemRates extends BaseController
         // Fetch only active items for the dropdown
         $data['items'] = $itemModel->where('is_disable', 0)->findAll();
 
-        return view('item_rates/index', $data);
+        return view('item_rates_view', $data);
     }
 
+    // store
     public function store()
     {
         $model = new RateModel();
@@ -57,6 +59,7 @@ class ItemRates extends BaseController
         return redirect()->to('/ItemRates')->with('status', 'Consumption Rate Saved');
     }
 
+    // edit
     public function edit($id)
     {
         $model = new RateModel();
@@ -64,6 +67,7 @@ class ItemRates extends BaseController
         return $this->response->setJSON($data);
     }
 
+    // update
     public function update($id)
     {
         $model = new RateModel();
@@ -97,6 +101,7 @@ class ItemRates extends BaseController
         return redirect()->to('/ItemRates')->with('status', 'Rate Updated Successfully');
     }
 
+    // delete
     public function delete($id)
     {
         $model = new RateModel();
@@ -106,6 +111,7 @@ class ItemRates extends BaseController
         return redirect()->to('/ItemRates')->with('status', 'Rate Deleted Successfully');
     }
 
+    // export
     public function export()
     {
         $rateModel = new RateModel();

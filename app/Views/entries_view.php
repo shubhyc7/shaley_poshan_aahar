@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('main') ?>
 <?= $this->section('content') ?>
 
 <div class="card shadow-sm border-0 mb-4">
@@ -86,26 +86,32 @@
 
                         <?php if (empty($entries)) : ?>
                             <tr>
-                                <td colspan="<?= (count($main_items) + count($support_items) + 3) ?>" class="text-center py-3 text-muted">या महिन्यासाठी कोणतीही नोंद आढळली नाही.</td>
+                                <td colspan="<?= (count($main_items) + count($support_items) + 4) ?>" class="text-center py-3 text-muted">नोंद आढळली नाही.</td>
                             </tr>
                         <?php else : ?>
                             <?php
                             $db = \Config\Database::connect();
-                            foreach ($entries as $row) : ?>
+                            foreach ($entries as $row) :
+                                // 1. Fetch all items associated with this specific Date and Category
+                                $sessionItems = $db->table('daily_aahar_entries')
+                                    ->where(['entry_date' => $row['entry_date'], 'category' => $row['category'], 'is_disable' => 0])
+                                    ->get()->getResultArray();
+
+                                // Create a simple lookup array: [item_id => qty]
+                                $qtyMap = array_column($sessionItems, 'qty', 'item_id');
+                                // Get the ID of the first record for delete action
+                                $firstId = $row['group_id'];
+                            ?>
                                 <tr class="bg-white">
-                                    <td class="small">
-                                        <div class="fw-bold"><?= date('d-M-Y', strtotime($row['entry_date'])) ?></div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark border" style="font-size: 0.65rem;">इयत्ता <?= $row['category'] ?></span>
-                                    </td>
-                                    <td class="text-center fw-bold text-muted small"><?= $row['total_students'] ?></td>
-                                    <td class="text-center fw-bold text-muted small"><?= $row['present_students'] ?></td>
+                                    <td class="small fw-bold"><?= date('d-M-Y', strtotime($row['entry_date'])) ?></td>
+                                    <td><span class="badge bg-light text-dark border">इयत्ता <?= $row['category'] ?></span></td>
+                                    <td class="text-center small"><?= $row['total_students'] ?></td>
+                                    <td class="text-center fw-bold small text-success"><?= $row['present_students'] ?></td>
 
                                     <?php foreach ($main_items as $mi) : ?>
                                         <td class="text-center small">
-                                            <?php if ($row['item_id'] == $mi['id']) : ?>
-                                                <span class="text-primary fw-bold"><?= number_format($row['qty'], 3) ?></span>
+                                            <?php if (isset($qtyMap[$mi['id']])) : ?>
+                                                <span class="text-primary fw-bold"><?= number_format($qtyMap[$mi['id']], 3) ?></span>
                                             <?php else : ?>
                                                 <span class="text-light">0.000</span>
                                             <?php endif; ?>
@@ -115,16 +121,22 @@
                                     <?php foreach ($support_items as $si) : ?>
                                         <td class="text-center small">
                                             <?php
+                                            // Support items are linked to the main entry IDs of this session
+                                            // We check if any of the main entries for this date/cat has this support item
+                                            $mainIds = array_column($sessionItems, 'id');
                                             $sv = $db->table('daily_aahar_entries_support_items')
-                                                ->where(['main_entry_id' => $row['id'], 'support_item_id' => $si['id'], 'is_disable' => '0'])
+                                                ->whereIn('main_entry_id', $mainIds)
+                                                ->where(['support_item_id' => $si['id'], 'is_disable' => '0'])
+                                                ->selectSum('qty')
                                                 ->get()->getRow();
-                                            echo $sv ? '<span class="text-secondary fw-bold">' . number_format($sv->qty, 3) . '</span>' : '<span class="text-light">0.000</span>';
+
+                                            echo ($sv && $sv->qty > 0) ? '<span class="text-secondary fw-bold">' . number_format($sv->qty, 3) . '</span>' : '<span class="text-light">0.000</span>';
                                             ?>
                                         </td>
                                     <?php endforeach; ?>
 
                                     <td class="text-center">
-                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="text-danger" onclick="return confirm('ही नोंद हटवायची?')">
+                                        <a href="<?= base_url('entries/delete_session/' . bin2hex($row['entry_date']) . '/' . $row['category']) ?>" class="text-danger" onclick="return confirm('या सत्रातील सर्व नोंदी हटवायच्या?')">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </td>

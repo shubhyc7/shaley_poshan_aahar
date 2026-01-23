@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class StudentStrength extends BaseController
 {
+    // student_strength_view
     public function index()
     {
         $model = new StudentStrengthModel();
@@ -18,9 +19,10 @@ class StudentStrength extends BaseController
             ->orderBy('year', 'DESC')
             ->orderBy('month', 'DESC')
             ->findAll();
-        return view('student_strength/index', $data);
+        return view('student_strength_view', $data);
     }
 
+    // store
     public function store()
     {
         $model = new StudentStrengthModel();
@@ -52,6 +54,7 @@ class StudentStrength extends BaseController
         return redirect()->to('/StudentStrength')->with('status', 'Strength Saved');
     }
 
+    // edit
     public function edit($id)
     {
         $model = new StudentStrengthModel();
@@ -59,6 +62,7 @@ class StudentStrength extends BaseController
         return $this->response->setJSON($data);
     }
 
+    // update
     public function update($id)
     {
         $model = new StudentStrengthModel();
@@ -100,6 +104,7 @@ class StudentStrength extends BaseController
         return redirect()->to('/StudentStrength')->with('status', 'Record Deleted Successfully');
     }
 
+    // export
     public function export()
     {
         $model = new StudentStrengthModel();
