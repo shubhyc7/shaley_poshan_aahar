@@ -13,6 +13,28 @@
     </div>
 </div>
 
+<div class="card shadow-sm border-0 mb-1">
+    <div class="card-body">
+        <form method="GET" action="<?= base_url('ItemRates') ?>" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">महिना निवडा</label>
+                <select name="month" class="form-select" onchange="this.form.submit()">
+                    <option value="">सर्व महिने</option>
+                    <?php for ($m = 1; $m <= 12; $m++) : ?>
+                        <option value="<?= $m ?>" <?= ($filterMonth == $m) ? 'selected' : '' ?>>
+                            <?= date("F", mktime(0, 0, 0, $m, 10)) ?>
+                        </option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">वर्ष निवडा</label>
+                <input type="number" name="year" class="form-control" value="<?= $filterYear ?>" placeholder="उदा. 2024" onchange="this.form.submit()">
+            </div>
+        </form>
+    </div>
+</div>
+
 <?php if (session()->getFlashdata('status')) : ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?= session()->getFlashdata('status') ?>

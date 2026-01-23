@@ -14,11 +14,30 @@ class StudentStrength extends BaseController
     public function index()
     {
         $model = new StudentStrengthModel();
-        // Only show records where is_disable = 0
-        $data['records'] = $model->getActive()
-            ->orderBy('year', 'DESC')
+
+        // Get Filter Values from GET request
+        $filterMonth = $this->request->getGet('month') ?? date('n');
+        $filterYear  = $this->request->getGet('year') ?? date('Y');
+
+        // Start building the query
+        $query = $model->where('is_disable', 0);
+
+        // Apply filters if they are set
+        if ($filterMonth) {
+            $query->where('month', $filterMonth);
+        }
+        if ($filterYear) {
+            $query->where('year', $filterYear);
+        }
+
+        $data['records'] = $query->orderBy('year', 'DESC')
             ->orderBy('month', 'DESC')
             ->findAll();
+
+        // Pass filters back to view to maintain selection
+        $data['filterMonth'] = $filterMonth;
+        $data['filterYear']  = $filterYear;
+
         return view('student_strength_view', $data);
     }
 
@@ -114,11 +133,11 @@ class StudentStrength extends BaseController
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'ID');
-        $sheet->setCellValue('B1', 'Category');
-        $sheet->setCellValue('C1', 'Month');
-        $sheet->setCellValue('D1', 'Year');
-        $sheet->setCellValue('E1', 'Total Students');
+        $sheet->setCellValue('A1', 'क्रमांक');
+        $sheet->setCellValue('B1', 'इयत्ता');
+        $sheet->setCellValue('C1', 'महिना');
+        $sheet->setCellValue('D1', 'वर्ष');
+        $sheet->setCellValue('E1', 'एकूण विद्यार्थी');
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -133,7 +152,7 @@ class StudentStrength extends BaseController
         $row = 2;
         foreach ($records as $record) {
             $sheet->setCellValue('A' . $row, $record['id']);
-            $sheet->setCellValue('B' . $row, 'Class ' . $record['category']);
+            $sheet->setCellValue('B' . $row, 'इयत्ता ' . $record['category']);
             $sheet->setCellValue('C' . $row, date("F", mktime(0, 0, 0, $record['month'], 10)));
             $sheet->setCellValue('D' . $row, $record['year']);
             $sheet->setCellValue('E' . $row, $record['total_students']);
@@ -144,7 +163,7 @@ class StudentStrength extends BaseController
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'Student_Strength_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'विद्यार्थी_संख्या_यादी_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

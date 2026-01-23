@@ -11,15 +11,32 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class ItemRates extends BaseController
 {
-    // item_rates_view
     public function index()
     {
         $rateModel = new RateModel();
         $itemModel = new ItemModel();
 
-        $data['rates'] = $rateModel->getRatesWithItems();
-        // Fetch only active items for the dropdown
+        // Get Filter Values (Default to current if not provided)
+        $filterMonth = $this->request->getGet('month') ?? date('n');
+        $filterYear  = $this->request->getGet('year') ?? date('Y');
+        // Build the query
+        $query = $rateModel->select('item_rates.*, items.item_name, items.unit')
+            ->join('items', 'items.id = item_rates.item_id')
+            ->where('item_rates.is_disable', 0);
+
+        if ($filterMonth) {
+            $query->where('item_rates.month', $filterMonth);
+        }
+        if ($filterYear) {
+            $query->where('item_rates.year', $filterYear);
+        }
+
+        $data['rates'] = $query->findAll();
         $data['items'] = $itemModel->where('is_disable', 0)->findAll();
+
+        // Pass filter values back to view to keep them selected
+        $data['filterMonth'] = $filterMonth;
+        $data['filterYear']  = $filterYear;
 
         return view('item_rates_view', $data);
     }

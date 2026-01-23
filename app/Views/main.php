@@ -44,19 +44,11 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('entries') ?>">
-                            <i class="fas fa-edit me-1"></i> दैनंदिन नोंद
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('StudentStrength') ?>">
-                            <i class="fas fa-users me-1"></i> विद्यार्थी संख्या
-                        </a>
-                    </li>
+
+
                     <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('items') ?>">
-                            <i class="fas fa-list me-1"></i> वस्तू यादी 
+                            <i class="fas fa-list me-1"></i> वस्तू यादी
                         </a>
                     </li>
                     <li class="nav-item">
@@ -64,9 +56,20 @@
                             <i class="fas fa-list me-1"></i> वस्तू दर
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= base_url('StudentStrength') ?>">
+                            <i class="fas fa-users me-1"></i> विद्यार्थी संख्या
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('stock') ?>">
                             <i class="fas fa-box me-1"></i> स्टॉक
+                        </a>
+                    </li>
+                    <li class="nav-item ">
+                        <a class="nav-link" href="<?= base_url('entries') ?>">
+                            <i class="fas fa-edit me-1"></i> दैनंदिन नोंद
                         </a>
                     </li>
                     <!-- <li class="nav-item">
