@@ -121,13 +121,13 @@ class ItemRates extends BaseController
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'ID');
-        $sheet->setCellValue('B1', 'Item Name');
-        $sheet->setCellValue('C1', 'Category');
-        $sheet->setCellValue('D1', 'Month');
-        $sheet->setCellValue('E1', 'Year');
-        $sheet->setCellValue('F1', 'Qty Per Student');
-        $sheet->setCellValue('G1', 'Unit');
+        $sheet->setCellValue('A1', 'क्रमांक');
+        $sheet->setCellValue('B1', 'वस्तू');
+        $sheet->setCellValue('C1', 'इयत्ता');
+        $sheet->setCellValue('D1', 'महिना');
+        $sheet->setCellValue('E1', 'वर्ष');
+        $sheet->setCellValue('F1', 'प्रति विद्यार्थी प्रमाण');
+        $sheet->setCellValue('G1', 'एकक');
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -143,7 +143,7 @@ class ItemRates extends BaseController
         foreach ($rates as $rate) {
             $sheet->setCellValue('A' . $row, $rate['id']);
             $sheet->setCellValue('B' . $row, $rate['item_name']);
-            $sheet->setCellValue('C' . $row, 'Class ' . $rate['category']);
+            $sheet->setCellValue('C' . $row, 'इयत्ता ' . $rate['category']);
             $sheet->setCellValue('D' . $row, date("F", mktime(0, 0, 0, $rate['month'], 10)));
             $sheet->setCellValue('E' . $row, $rate['year']);
             $sheet->setCellValue('F' . $row, number_format($rate['per_student_qty'], 3));
@@ -155,7 +155,7 @@ class ItemRates extends BaseController
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'Consumption_Rates_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'वापर_दर_प्रति विद्यार्थी_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

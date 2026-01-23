@@ -99,10 +99,10 @@ class Items extends BaseController
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'ID');
-        $sheet->setCellValue('B1', 'Item Name');
-        $sheet->setCellValue('C1', 'Category');
-        $sheet->setCellValue('D1', 'Unit');
+        $sheet->setCellValue('A1', 'क्रमांक');
+        $sheet->setCellValue('B1', 'वस्तूचे नाव');
+        $sheet->setCellValue('C1', 'वस्तूचा प्रकार');
+        $sheet->setCellValue('D1', 'एकक');
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -127,7 +127,7 @@ class Items extends BaseController
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'Items_Master_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'वस्तू_यादी_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

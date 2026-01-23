@@ -56,7 +56,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('items') ?>">
-                            <i class="fas fa-list me-1"></i> वस्तू मास्टर
+                            <i class="fas fa-list me-1"></i> वस्तू यादी 
                         </a>
                     </li>
                     <li class="nav-item">

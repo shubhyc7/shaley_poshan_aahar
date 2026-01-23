@@ -34,7 +34,7 @@
                 <tr>
                     <th>क्रमांक</th>
                     <th>वस्तू</th>
-                    <th>श्रेणी</th>
+                    <th>इयत्ता</th>
                     <th>महिना/वर्ष</th>
                     <th>प्रति विद्यार्थी प्रमाण</th>
                     <th>एकक</th>
@@ -49,19 +49,7 @@
                         <td><span class="badge bg-info text-dark">इयत्ता <?= $rate['category'] ?></span></td>
                         <td><?= date("M", mktime(0, 0, 0, $rate['month'], 10)) ?> <?= $rate['year'] ?></td>
                         <td><?= number_format($rate['per_student_qty'], 3) ?></td>
-                        <td>
-                            <?php
-                            if ($rate['unit'] == 'kg') {
-                                echo 'किलो (किलोग्रॅम)';
-                            }
-                            if ($rate['unit'] == 'gm') {
-                                echo 'ग्रॅम';
-                            }
-                            if ($rate['unit'] == 'ltr') {
-                                echo 'लिटर';
-                            }
-                            ?>
-                        </td>
+                        <td><strong><?= $rate['unit'] ?></strong></td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= $rate['id'] ?>"><i class="fas fa-edit"></i></button>
                             <a href="<?= base_url('ItemRates/delete/' . $rate['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')"><i class="fas fa-trash"></i></a>
@@ -82,10 +70,10 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label>श्रेणी निवडा</label>
+                    <label>इयत्ता निवडा</label>
                     <select name="category" class="form-select" required>
-                        <option value="5-8">इयत्ता 5 ते 8</option>
-                        <option value="8-10">इयत्ता 8 ते 10</option>
+                        <option value="6-8">इयत्ता 6 ते 8</option>
+                        <option value="9-10">इयत्ता 9 ते 10</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -119,10 +107,10 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label>श्रेणी</label>
+                    <label>इयत्ता</label>
                     <select name="category" id="edit_category" class="form-select" required>
-                        <option value="5-8">इयत्ता 5 ते 8</option>
-                        <option value="8-10">इयत्ता 8 ते 10</option>
+                        <option value="6-8">इयत्ता 6 ते 8</option>
+                        <option value="9-10">इयत्ता 9 ते 10</option>
                     </select>
                 </div>
                 <div class="mb-3">

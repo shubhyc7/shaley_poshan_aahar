@@ -2,7 +2,7 @@
 <?= $this->section('content') ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>वस्तू मास्टर</h2>
+    <h2>वस्तू यादी</h2>
     <div>
         <a href="<?= base_url('Items/export') ?>" class="btn btn-success me-2">
             <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
@@ -50,19 +50,7 @@
                                 <?= $item['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक'; ?>
                             </span>
                         </td>
-                        <td>
-                            <?php
-                            if ($item['unit'] == 'kg') {
-                                echo 'किलो (किलोग्रॅम)';
-                            }
-                            if ($item['unit'] == 'gm') {
-                                echo 'ग्रॅम';
-                            }
-                            if ($item['unit'] == 'ltr') {
-                                echo 'लिटर';
-                            }
-                            ?>
-                        </td>
+                        <td><strong><?= $item['unit'] ?></strong></td>
                         <td>
                             <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-id="<?= $item['id'] ?>">
                                 <i class="fas fa-edit"></i>
@@ -101,9 +89,9 @@
                 <div class="mb-3">
                     <label class="form-label">एकक</label>
                     <select name="unit" class="form-select" required>
-                        <option value="kg">किलो (किलोग्रॅम)</option>
-                        <option value="gm">ग्रॅम</option>
-                        <option value="ltr">लिटर</option>
+                        <option value="ग्रॅम">ग्रॅम</option>
+                        <option value="किलो">किलो </option>
+                        <option value="लिटर">लिटर</option>
                     </select>
                 </div>
             </div>
@@ -137,9 +125,9 @@
                 <div class="mb-3">
                     <label class="form-label">एकक</label>
                     <select name="unit" id="edit_unit" class="form-select" required>
-                        <option value="kg">किलो</option>
-                        <option value="gm">ग्रॅम</option>
-                        <option value="ltr">लिटर</option>
+                        <option value="ग्रॅम">ग्रॅम</option>
+                        <option value="किलो">किलो</option>
+                        <option value="लिटर">लिटर</option>
                     </select>
                 </div>
             </div>

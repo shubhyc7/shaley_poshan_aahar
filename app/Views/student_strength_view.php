@@ -2,7 +2,7 @@
 <?= $this->section('content') ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>विद्यार्थी संख्या मास्टर</h2>
+    <h2>विद्यार्थी संख्या यादी</h2>
     <div>
         <a href="<?= base_url('StudentStrength/export') ?>" class="btn btn-success me-2">
             <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
@@ -33,7 +33,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>क्रमांक</th>
-                    <th>श्रेणी</th>
+                    <th>इयत्ता</th>
                     <th>महिना / वर्ष</th>
                     <th>एकूण विद्यार्थी</th>
                     <th>क्रिया</th>
@@ -75,10 +75,10 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">श्रेणी निवडा</label>
+                    <label class="form-label fw-bold">इयत्ता निवडा</label>
                     <select name="category" class="form-select" required>
-                        <option value="5-8">इयत्ता 5 ते 8</option>
-                        <option value="8-10">इयत्ता 8 ते 10</option>
+                        <option value="6-8">इयत्ता 6 ते 8</option>
+                        <option value="9-10">इयत्ता 9 ते 10</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -121,10 +121,10 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="fw-bold">श्रेणी</label>
+                    <label class="fw-bold">इयत्ता</label>
                     <select name="category" id="edit_category" class="form-select" required>
-                        <option value="5-8">इयत्ता 5 ते 8</option>
-                        <option value="8-10">इयत्ता 8 ते 10</option>
+                        <option value="6-8">इयत्ता 6 ते 8</option>
+                        <option value="9-10">इयत्ता 9 ते 10</option>
                     </select>
                 </div>
                 <div class="mb-3">
