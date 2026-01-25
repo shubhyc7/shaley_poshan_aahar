@@ -118,13 +118,20 @@
                             <?php else : ?>
                                 <?php
                                 $db = \Config\Database::connect();
+
+                                // Initialize Totals
+                                $sumTotalStudents = 0;
+                                $sumPresentStudents = 0;
+                                $itemTotals = []; // To store sums for each item_id
+
                                 foreach ($entries as $row) :
-                                    // Fetch all items (Main + Support) for this parent ID
+                                    $sumTotalStudents += $row['total_students'];
+                                    $sumPresentStudents += $row['present_students'];
+
                                     $allChildItems = $db->table('daily_aahar_entries_items')
                                         ->where(['daily_aahar_entries_id' => $row['id'], 'is_disable' => 0])
                                         ->get()->getResultArray();
 
-                                    // Map item_id to qty for easy display
                                     $itemQtyMap = array_column($allChildItems, 'qty', 'item_id');
                                 ?>
                                     <tr class="bg-white">
@@ -133,23 +140,21 @@
                                         <td class="text-center small"><?= $row['total_students'] ?></td>
                                         <td class="text-center fw-bold small text-success"><?= $row['present_students'] ?></td>
 
-                                        <?php foreach ($main_items as $mi) : ?>
+                                        <?php foreach ($main_items as $mi) :
+                                            $qty = $itemQtyMap[$mi['id']] ?? 0;
+                                            $itemTotals[$mi['id']] = ($itemTotals[$mi['id']] ?? 0) + $qty;
+                                        ?>
                                             <td class="text-center small">
-                                                <?php if (isset($itemQtyMap[$mi['id']])) : ?>
-                                                    <span class="text-primary fw-bold"><?= number_format($itemQtyMap[$mi['id']], 3) ?></span>
-                                                <?php else : ?>
-                                                    <span class="text-light">0.000</span>
-                                                <?php endif; ?>
+                                                <?= ($qty > 0) ? '<span class="text-primary fw-bold">' . number_format($qty, 3) . '</span>' : '<span class="text-light">0.000</span>' ?>
                                             </td>
                                         <?php endforeach; ?>
 
-                                        <?php foreach ($support_items as $si) : ?>
+                                        <?php foreach ($support_items as $si) :
+                                            $qty = $itemQtyMap[$si['id']] ?? 0;
+                                            $itemTotals[$si['id']] = ($itemTotals[$si['id']] ?? 0) + $qty;
+                                        ?>
                                             <td class="text-center small">
-                                                <?php if (isset($itemQtyMap[$si['id']])) : ?>
-                                                    <span class="text-secondary fw-bold"><?= number_format($itemQtyMap[$si['id']], 3) ?></span>
-                                                <?php else : ?>
-                                                    <span class="text-light">0.000</span>
-                                                <?php endif; ?>
+                                                <?= ($qty > 0) ? '<span class="text-secondary fw-bold">' . number_format($qty, 3) . '</span>' : '<span class="text-light">0.000</span>' ?>
                                             </td>
                                         <?php endforeach; ?>
 
@@ -162,6 +167,26 @@
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </tbody>
+
+                        <?php if (!empty($entries)) : ?>
+                            <tfoot class="table-light fw-bold border-top border-dark">
+                                <tr>
+                                    <td colspan="2" class="text-end">एकूण (Total):</td>
+                                    <td class="text-center"><?= $sumTotalStudents ?></td>
+                                    <td class="text-center text-success"><?= $sumPresentStudents ?></td>
+
+                                    <?php foreach ($main_items as $mi) : ?>
+                                        <td class="text-center text-primary"><?= number_format($itemTotals[$mi['id']] ?? 0, 3) ?></td>
+                                    <?php endforeach; ?>
+
+                                    <?php foreach ($support_items as $si) : ?>
+                                        <td class="text-center text-secondary"><?= number_format($itemTotals[$si['id']] ?? 0, 3) ?></td>
+                                    <?php endforeach; ?>
+
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        <?php endif; ?>
                     </table>
                 </div>
             </form>
