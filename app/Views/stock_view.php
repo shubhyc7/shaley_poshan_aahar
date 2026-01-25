@@ -1,35 +1,44 @@
 <?= $this->extend('main') ?>
 <?= $this->section('content') ?>
 
-<h2>स्टॉक नोंद</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>स्टॉक नोंद</h2>
+    <div>
+        <a href="<?= base_url("Stock/export?month=$month&year=$year&item_id=$selected_item") ?>" class="btn btn-success me-2">
+            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
+            <i class="fas fa-plus"></i> नवीन स्टॉक नोंद
+        </button>
+    </div>
+</div>
+
+<h2></h2>
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
         <form method="GET" action="<?= base_url('Stock') ?>" id="filterForm" class="row g-2 align-items-end">
             <div class="col-md-2">
-                <label class="small fw-bold">महिना</label>
-                <select name="month" class="form-select" onchange="this.form.submit()">
+                <label class="form-label small fw-bold">महिना निवडा</label>
+                <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
                     <?php for ($m = 1; $m <= 12; $m++) : ?>
                         <option value="<?= $m ?>" <?= $m == $month ? 'selected' : '' ?>><?= date("F", mktime(0, 0, 0, $m, 10)) ?></option>
                     <?php endfor; ?>
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="small fw-bold">वर्ष</label>
-                <input type="number" name="year" class="form-control" value="<?= $year ?>" onchange="this.form.submit()">
+                <label class="form-label small fw-bold">वर्ष निवडा</label>
+                <input type="number" name="year" class="form-control form-control-sm" value="<?= $year ?>" onchange="this.form.submit()">
             </div>
             <div class="col-md-3">
-                <label class="small fw-bold">वस्तू निवडा</label>
-                <select name="item_id" class="form-select" onchange="this.form.submit()">
+                <label class="form-label small fw-bold">वस्तू निवडा</label>
+                <select name="item_id" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">सर्व वस्तू</option>
                     <?php foreach ($items as $it) : ?>
                         <option value="<?= $it['id'] ?>" <?= $selected_item == $it['id'] ? 'selected' : '' ?>><?= $it['item_name'] ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-5 text-end">
-                <a href="<?= base_url("Stock/export?month=$month&year=$year&item_id=$selected_item") ?>" class="btn btn-success btn-sm">एक्सेल</a>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStockModal">नवीन नोंद</button>
-            </div>
+          
         </form>
     </div>
 </div>
@@ -52,7 +61,7 @@
 <div class="table-responsive bg-white rounded shadow-sm border">
     <table class="table table-bordered table-hover align-middle mb-0">
         <thead class="table-light text-center small">
-            <tr>
+            <tr class="table-dark">
                 <th>तारीख</th>
                 <th>वस्तू (Unit)</th>
                 <th>प्रकार</th>

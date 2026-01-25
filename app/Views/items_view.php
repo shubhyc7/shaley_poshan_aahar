@@ -32,7 +32,7 @@
     <div class="card-body">
         <table class="table table-hover">
             <thead class="table-light">
-                <tr>
+                <tr class="table-dark">
                     <th>क्रमांक</th>
                     <th>वस्तूचे नाव</th>
                     <th>वस्तूचा प्रकार</th>
