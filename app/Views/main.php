@@ -64,7 +64,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('stock') ?>">
-                            <i class="fas fa-box me-1"></i> स्टॉक
+                            <i class="fas fa-box me-1"></i> स्टॉक नोंद
                         </a>
                     </li>
                     <li class="nav-item ">
