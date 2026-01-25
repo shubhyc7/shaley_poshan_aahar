@@ -1,69 +1,74 @@
 <?= $this->extend('main') ?>
 <?= $this->section('content') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>वस्तू यादी</h2>
-    <div>
-        <a href="<?= base_url('Items/export') ?>" class="btn btn-success me-2">
-            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
-        </a>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
-            <i class="fas fa-plus"></i> नवीन वस्तू जोडा
-        </button>
-    </div>
-</div>
-
-<?php if (session()->getFlashdata('status')) : ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('status') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
-
-<?php if (session()->getFlashdata('error')) : ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('error') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
 <div class="card shadow-sm">
-    <div class="card-body">
-        <table class="table table-hover">
-            <thead class="table-light">
-                <tr class="table-dark">
-                    <th>क्रमांक</th>
-                    <th>वस्तूचे नाव</th>
-                    <th>वस्तूचा प्रकार</th>
-                    <th>एकक</th>
-                    <th>क्रिया</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($items as $item) : ?>
-                    <tr>
-                        <td><?= $item['id'] ?></td>
-                        <td><strong><?= $item['item_name'] ?></strong></td>
-                        <td>
-                            <span class="badge <?= $item['item_type'] == 'MAIN' ? 'bg-info' : 'bg-secondary' ?>">
-                                <?= $item['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक'; ?>
-                            </span>
-                        </td>
-                        <td><strong><?= $item['unit'] ?></strong></td>
-                        <td>
-                            <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-id="<?= $item['id'] ?>">
-                                <i class="fas fa-edit"></i>
-                            </button>
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-primary fw-bold">वस्तू यादी</h5>
 
-                            <a href="<?= base_url('items/delete/' . $item['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('ही वस्तू हटवायची?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </td>
+        <div>
+            <a href="<?= base_url('Items/export') ?>" class="btn btn-success me-2">
+                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                <i class="fas fa-plus"></i> नवीन वस्तू जोडा
+            </button>
+        </div>
+    </div>
+
+
+
+    <div class="card-body">
+
+        <?php if (session()->getFlashdata('status')) : ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?= session()->getFlashdata('status') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+
+        <?php if (session()->getFlashdata('error')) : ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= session()->getFlashdata('error') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+        <div class="table-responsive bg-white rounded shadow-sm border mt-4">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="table-dark">
+                        <th>क्रमांक</th>
+                        <th>वस्तूचे नाव</th>
+                        <th>वस्तूचा प्रकार</th>
+                        <th>एकक</th>
+                        <th>क्रिया</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($items as $item) : ?>
+                        <tr>
+                            <td><?= $item['id'] ?></td>
+                            <td><strong><?= $item['item_name'] ?></strong></td>
+                            <td>
+                                <span class="badge <?= $item['item_type'] == 'MAIN' ? 'bg-info' : 'bg-secondary' ?>">
+                                    <?= $item['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक'; ?>
+                                </span>
+                            </td>
+                            <td><strong><?= $item['unit'] ?></strong></td>
+                            <td>
+                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-id="<?= $item['id'] ?>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                                <a href="<?= base_url('items/delete/' . $item['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('ही वस्तू हटवायची?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -140,8 +145,7 @@
 </div>
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<script src="<?php echo base_url('js/jquery-3.6.0.min.js'); ?>"></script>
 
 <script>
     $(document).ready(function() {

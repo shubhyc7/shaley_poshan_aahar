@@ -1,21 +1,36 @@
 <?= $this->extend('main') ?>
 <?= $this->section('content') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>विद्यार्थी संख्या यादी</h2>
-    <div>
-        <a href="<?= base_url('StudentStrength/export') ?>" class="btn btn-success me-2">
-            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
-        </a>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
-            <i class="fas fa-plus"></i> नवीन संख्या जोडा
-        </button>
-    </div>
-</div>
-
-
 <div class="card shadow-sm border-0 mb-4">
+
+
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+
+        <h5 class="mb-0 text-primary fw-bold">विद्यार्थी संख्या यादी</h5>
+        <div>
+            <a href="<?= base_url('StudentStrength/export') ?>" class="btn btn-success me-2">
+                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="fas fa-plus"></i> नवीन संख्या जोडा
+            </button>
+        </div>
+    </div>
     <div class="card-body">
+        <?php if (session()->getFlashdata('status')) : ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?= session()->getFlashdata('status') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('error')) : ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= session()->getFlashdata('error') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
         <form method="GET" action="<?= base_url('StudentStrength') ?>" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label fw-bold">महिना निवडा</label>
@@ -32,61 +47,47 @@
                 <label class="form-label fw-bold">वर्ष निवडा</label>
                 <input type="number" name="year" class="form-control form-control-sm" value="<?= $filterYear ?>" placeholder="उदा. 2024" onchange="this.form.submit()">
             </div>
-            
+
         </form>
-    </div>
-</div>
 
-<?php if (session()->getFlashdata('status')) : ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('status') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
 
-<?php if (session()->getFlashdata('error')) : ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('error') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <table class="table table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>क्रमांक</th>
-                    <th>इयत्ता</th>
-                    <th>महिना / वर्ष</th>
-                    <th>एकूण विद्यार्थी</th>
-                    <th>क्रिया</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($records as $row) : ?>
+        <div class="table-responsive bg-white rounded shadow-sm border mt-4">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-dark">
                     <tr>
-                        <td><?= $row['id'] ?></td>
-                        <td>
-                            <span class="badge <?= $row['category'] == '5-8' ? 'bg-info' : 'bg-primary' ?>">
-                                इयत्ता <?= $row['category'] ?>
-                            </span>
-                        </td>
-                        <td><?= date("F", mktime(0, 0, 0, $row['month'], 10)) ?> - <?= $row['year'] ?></td>
-                        <td><strong><?= $row['total_students'] ?></strong></td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="<?= $row['id'] ?>">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <a href="<?= base_url('StudentStrength/delete/' . $row['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('हटवायचे?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </td>
-
+                        <th>क्रमांक</th>
+                        <th>इयत्ता</th>
+                        <th>महिना / वर्ष</th>
+                        <th>एकूण विद्यार्थी</th>
+                        <th>क्रिया</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($records as $row) : ?>
+                        <tr>
+                            <td><?= $row['id'] ?></td>
+                            <td>
+                                <span class="badge <?= $row['category'] == '5-8' ? 'bg-info' : 'bg-primary' ?>">
+                                    इयत्ता <?= $row['category'] ?>
+                                </span>
+                            </td>
+                            <td><?= date("F", mktime(0, 0, 0, $row['month'], 10)) ?> - <?= $row['year'] ?></td>
+                            <td><strong><?= $row['total_students'] ?></strong></td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="<?= $row['id'] ?>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="<?= base_url('StudentStrength/delete/' . $row['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('हटवायचे?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -176,8 +177,7 @@
     </div>
 </div>
 
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="<?php echo base_url('js/jquery-3.6.0.min.js'); ?>"></script>
 
 <script>
     $(document).ready(function() {

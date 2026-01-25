@@ -3,7 +3,7 @@
 
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-plus-circle me-2"></i>दैनंदिन बहु-वस्तू नोंद</h5>
+        <h5 class="mb-0 text-primary fw-bold">दैनंदिन बहु-वस्तू नोंद</h5>
     </div>
     <div class="card shadow-sm border-0 mb-4">
         <div class="card shadow-sm border-0 mb-4">
@@ -29,27 +29,28 @@
                     </div> -->
                     <div class="col-md-7 text-end">
                         <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
-                            <i class="fas fa-file-excel"></i> या महिन्याचा रिपोर्ट
+                            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
                         </a>
                     </div>
                 </form>
             </div>
         </div>
-        <?php if (session()->getFlashdata('status')) : ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= session()->getFlashdata('status') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
-
-        <?php if (session()->getFlashdata('error')) : ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?= session()->getFlashdata('error') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
 
         <div class="card-body p-0">
+
+            <?php if (session()->getFlashdata('status')) : ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <?= session()->getFlashdata('status') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if (session()->getFlashdata('error')) : ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <?= session()->getFlashdata('error') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
             <form action="<?= base_url('entries/store') ?>" method="POST" id="entryForm">
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle mb-0">
@@ -167,7 +168,7 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="<?php echo base_url('js/jquery-3.6.0.min.js'); ?>"></script>
     <script>
         $(document).ready(function() {
             fetchStrength();
