@@ -140,11 +140,12 @@ class ItemRates extends BaseController
 
         $sheet->setCellValue('A1', 'क्रमांक');
         $sheet->setCellValue('B1', 'वस्तू');
-        $sheet->setCellValue('C1', 'इयत्ता');
-        $sheet->setCellValue('D1', 'महिना');
-        $sheet->setCellValue('E1', 'वर्ष');
-        $sheet->setCellValue('F1', 'प्रति विद्यार्थी प्रमाण');
-        $sheet->setCellValue('G1', 'एकक');
+        $sheet->setCellValue('C1', 'वस्तू प्रकार');
+        $sheet->setCellValue('D1', 'इयत्ता');
+        $sheet->setCellValue('E1', 'महिना');
+        $sheet->setCellValue('F1', 'वर्ष');
+        $sheet->setCellValue('G1', 'प्रति विद्यार्थी प्रमाण');
+        $sheet->setCellValue('H1', 'एकक');
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -154,17 +155,18 @@ class ItemRates extends BaseController
             ],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
         ];
-        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
 
         $row = 2;
         foreach ($rates as $rate) {
             $sheet->setCellValue('A' . $row, $rate['id']);
             $sheet->setCellValue('B' . $row, $rate['item_name']);
-            $sheet->setCellValue('C' . $row, 'इयत्ता ' . $rate['category']);
-            $sheet->setCellValue('D' . $row, date("F", mktime(0, 0, 0, $rate['month'], 10)));
-            $sheet->setCellValue('E' . $row, $rate['year']);
-            $sheet->setCellValue('F' . $row, number_format($rate['per_student_qty'], 3));
-            $sheet->setCellValue('G' . $row, $rate['unit']);
+            $sheet->setCellValue('C' . $row, $rate['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक');
+            $sheet->setCellValue('D' . $row, 'इयत्ता ' . $rate['category']);
+            $sheet->setCellValue('E' . $row, date("F", mktime(0, 0, 0, $rate['month'], 10)));
+            $sheet->setCellValue('F' . $row, $rate['year']);
+            $sheet->setCellValue('G' . $row, number_format($rate['per_student_qty'], 3));
+            $sheet->setCellValue('H' . $row, $rate['unit']);
             $row++;
         }
 

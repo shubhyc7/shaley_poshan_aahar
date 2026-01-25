@@ -6,6 +6,8 @@ use App\Models\StockModel;
 use App\Models\ItemModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class Stock extends BaseController
 {
@@ -197,22 +199,34 @@ class Stock extends BaseController
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set Title
-        $sheet->setCellValue('A1', 'Stock Ledger Report: ' . date("F", mktime(0, 0, 0, $month, 10)) . ' ' . $year);
+        $sheet->setCellValue('A1', 'स्टॉक नोंद : ' . date("F", mktime(0, 0, 0, $month, 10)) . ' ' . $year);
         $sheet->mergeCells('A1:G1');
 
         // Set Headers
-        $headers = ['Date', 'Item Name', 'Type', 'Opening Bal', 'Trans Qty', 'Closing Bal', 'Remarks'];
+        $headers = ['तारीख', 'वस्तू (एकक)', 'प्रकार', 'प्रारंभिक (Opening)', 'आवक / खर्च (Qty)', 'शिल्लक (Closing)', 'शेरा'];
         $col = 'A';
         foreach ($headers as $h) {
             $sheet->setCellValue($col . '3', $h);
             $col++;
         }
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4']
+            ],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+        ];
+        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
+        // $sheet->getStyle('A2:G2')->applyFromArray($headerStyle);
+        $sheet->getStyle('A3:G3')->applyFromArray($headerStyle);
 
         // 5. Fill Data with Running Balance Logic
         $row = 4;
         $tIn = 0;
         $tOut = 0;
         $currentRunning = $openingBalances;
+
 
         foreach ($transactions as $tr) {
             $id = $tr['item_id'];
@@ -242,7 +256,7 @@ class Stock extends BaseController
         }
 
         // 6. Add Summary Footer
-        $sheet->setCellValue('A' . $row, 'TOTAL SUMMARY');
+        $sheet->setCellValue('A' . $row, 'एकूण सारांश');
         $sheet->mergeCells("A$row:C$row");
         $sheet->setCellValue('D' . $row, number_format($totalMonthOpening, 3));
         $sheet->setCellValue('E' . $row, "IN: +$tIn | OUT: -$tOut");

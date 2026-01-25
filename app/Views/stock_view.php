@@ -61,12 +61,12 @@
                 <thead class="table-light text-center small">
                     <tr class="table-dark">
                         <th>तारीख</th>
-                        <th>वस्तू (Unit)</th>
+                        <th>वस्तू (एकक)</th>
                         <th>प्रकार</th>
                         <th>प्रारंभिक (Opening)</th>
                         <th>आवक / खर्च (Qty)</th>
                         <th>शिल्लक (Closing)</th>
-                        <th>Action</th>
+                        <th>क्रिया</th>
                     </tr>
                 </thead>
                 <tbody>

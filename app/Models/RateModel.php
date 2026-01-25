@@ -16,7 +16,7 @@ class RateModel extends Model
 
     public function getRatesWithItems()
     {
-        return $this->select('item_rates.*, items.item_name, items.unit')
+        return $this->select('item_rates.*, items.item_name, items.unit,items.item_type')
             ->join('items', 'items.id = item_rates.item_id')
             ->where('item_rates.is_disable', 0)
             ->findAll();
