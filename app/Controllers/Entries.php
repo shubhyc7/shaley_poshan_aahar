@@ -76,6 +76,8 @@ class Entries extends BaseController
         $main_item_ids = $this->request->getPost('main_item_id');
         $main_qtys = $this->request->getPost('main_item_qty');
 
+        $db = \Config\Database::connect();
+
         if ($main_item_ids) {
             foreach ($main_item_ids as $idx => $mid) {
                 // Since checkboxes only send values for checked items, 
@@ -87,6 +89,16 @@ class Entries extends BaseController
                         'item_id'                => $mid,
                         'qty'                    => $main_qtys[$idx],
                         'is_disable'             => 0
+                    ]);
+
+                    // Inside Entries::store loop after inserting into daily_aahar_entries_items
+                    $db->table('stock_transactions')->insert([
+                        'item_id' => $mid,
+                        'transaction_type' => 'OUT',
+                        'daily_aahar_entries_id' => $parentId, // ID from child table
+                        'quantity' => $main_qtys[$idx],
+                        'transaction_date' => $date,
+                        'is_disable' => 0
                     ]);
                 }
             }
@@ -104,6 +116,16 @@ class Entries extends BaseController
                         'item_id'                => $sid,
                         'qty'                    => $support_qtys[$idx],
                         'is_disable'             => 0
+                    ]);
+
+                    // Inside Entries::store loop after inserting into daily_aahar_entries_items
+                    $db->table('stock_transactions')->insert([
+                        'item_id' => $sid,
+                        'transaction_type' => 'OUT',
+                        'daily_aahar_entries_id' => $parentId, // ID from child table
+                        'quantity' => $support_qtys[$idx],
+                        'transaction_date' => $date,
+                        'is_disable' => 0
                     ]);
                 }
             }
@@ -162,6 +184,11 @@ class Entries extends BaseController
         // 2. Soft delete all items (Main & Support) linked to this parent ID
         // This targets your new 'daily_aahar_entries_items' table
         $db->table('daily_aahar_entries_items')
+            ->where('daily_aahar_entries_id', $id)
+            ->update(['is_disable' => 1]);
+
+
+        $db->table('stock_transactions')
             ->where('daily_aahar_entries_id', $id)
             ->update(['is_disable' => 1]);
 
