@@ -61,7 +61,7 @@ class ItemRates extends BaseController
         ])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "A rate for this item already exists for the selected category and month!");
+            return redirect()->back()->withInput()->with('error', "निवडलेल्या इयत्ता आणि महिन्यासाठी या वस्तूचा दर आधीच अस्तित्वात आहे!");
         }
 
         $model->save([
@@ -73,7 +73,7 @@ class ItemRates extends BaseController
             'is_disable'      => 0
         ]);
 
-        return redirect()->to('/ItemRates')->with('status', 'Consumption Rate Saved');
+        return redirect()->to('/ItemRates')->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
     }
 
     // edit
@@ -104,7 +104,7 @@ class ItemRates extends BaseController
         ])->where('id !=', $id)->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', "Another record already exists with these settings!");
+            return redirect()->back()->with('error', "या सेटिंग्जसह आधीच एक रेकॉर्ड अस्तित्वात आहे!");
         }
 
         $model->update($id, [
@@ -115,7 +115,7 @@ class ItemRates extends BaseController
             'year'            => $year,
         ]);
 
-        return redirect()->to('/ItemRates')->with('status', 'Rate Updated Successfully');
+        return redirect()->to('/ItemRates')->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
     }
 
     // delete
@@ -125,7 +125,7 @@ class ItemRates extends BaseController
         // SOFT DELETE: Mark as disabled instead of removing
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/ItemRates')->with('status', 'Rate Deleted Successfully');
+        return redirect()->to('/ItemRates')->with('status', 'दर यशस्वीरित्या हटवला!');
     }
 
     // export
@@ -172,7 +172,7 @@ class ItemRates extends BaseController
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'वापर_दर_प्रति विद्यार्थी_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'वापर_दर_प्रति_विद्यार्थी_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

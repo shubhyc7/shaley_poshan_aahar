@@ -32,7 +32,7 @@ class Items extends BaseController
         ])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "Item '$itemName' already exists in the master list!");
+            return redirect()->back()->withInput()->with('error', "वस्तू '$itemName' मास्टर सूचीमध्ये आधीच अस्तित्वात आहे!");
         }
 
         $model->save([
@@ -42,7 +42,7 @@ class Items extends BaseController
             'is_disable' => 0
         ]);
 
-        return redirect()->to('/items')->with('status', 'Item Added Successfully');
+        return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या जोडली गेली!');
     }
 
     // edit
@@ -66,7 +66,7 @@ class Items extends BaseController
         ])->where('id !=', $id)->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', "Another active item with the name '$itemName' already exists!");
+            return redirect()->back()->with('error', "या नावाने असलेली दुसरी सक्रिय वस्तू '$itemName' आधीच अस्तित्वात आहे!");
         }
 
         $model->update($id, [
@@ -75,7 +75,7 @@ class Items extends BaseController
             'unit'      => $this->request->getPost('unit'),
         ]);
 
-        return redirect()->to('/items')->with('status', 'Item Updated Successfully');
+        return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या अद्यतनित झाली!');
     }
 
     // SOFT DELETE Logic
@@ -86,7 +86,7 @@ class Items extends BaseController
         // Update is_disable instead of deleting the row
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/items')->with('status', 'Item Deleted Successfully (Archived)');
+        return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या हटवली!');
     }
 
     // export

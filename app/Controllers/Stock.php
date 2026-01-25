@@ -121,7 +121,7 @@ class Stock extends BaseController
             $db->table('stock_transactions')->insert($saveData);
         }
 
-        return redirect()->to(base_url("Stock?month=$f_month&year=$f_year&item_id=$f_item"))->with('status', 'यशस्वीरित्या जतन केले.');
+        return redirect()->to(base_url("Stock?month=$f_month&year=$f_year&item_id=$f_item"))->with('status', 'स्टॉक नोंद यशस्वीरित्या जतन केले!');
     }
 
     public function delete($id)
@@ -136,7 +136,7 @@ class Stock extends BaseController
         $row = $db->table('stock_transactions')->where('id', $id)->get()->getRow();
         if ($row && $row->transaction_type != 'OUT') {
             $db->table('stock_transactions')->where('id', $id)->update(['is_disable' => 1]);
-            return redirect()->to(base_url("Stock?month=$f_month&year=$f_year&item_id=$f_item"))->with('status', 'हटवले.');
+            return redirect()->to(base_url("Stock?month=$f_month&year=$f_year&item_id=$f_item"))->with('status', 'स्टॉक नोंद यशस्वीरित्या हटवली!');
         }
         return redirect()->back()->with('error', 'खर्च (OUT) नोंद हटवता येत नाही.');
     }
@@ -256,7 +256,7 @@ class Stock extends BaseController
         }
 
         // Download
-        $filename = 'Stock_Ledger_' . $month . '_' . $year . '.xlsx';
+        $filename = 'स्टॉक_नोंद_' . $month . '_' . $year . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         (new Xlsx($spreadsheet))->save('php://output');

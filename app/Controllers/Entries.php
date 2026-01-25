@@ -192,7 +192,7 @@ class Entries extends BaseController
             ->where('daily_aahar_entries_id', $id)
             ->update(['is_disable' => 1]);
 
-        return redirect()->to('/entries')->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली.');
+        return redirect()->to('/entries')->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली!');
     }
 
     // export
@@ -221,7 +221,7 @@ class Entries extends BaseController
         $sheet = $spreadsheet->getActiveSheet();
 
         // 3. Set Dynamic Headers
-        $headers = ['Date', 'Category', 'Total Students', 'Present Students'];
+        $headers = ['तारीख', 'इयत्ता', 'एकूण', 'उपस्थित'];
 
         // Add Main Item names to header list
         foreach ($mainItems as $mi) {
@@ -289,7 +289,7 @@ class Entries extends BaseController
         }
 
         // 5. Export File
-        $filename = 'Aahar_Register_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'दैनंदिन_बहु-वस्तू_नोंद_' . date('Y-m-d_His') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

@@ -59,7 +59,7 @@ class StudentStrength extends BaseController
         ])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "Data already exists for $category in this Month/Year!");
+            return redirect()->back()->withInput()->with('error', "या महिना/वर्षासाठी $category चा विद्यार्थी संख्या आधीच अस्तित्वात आहे!");
         }
 
         $model->save([
@@ -70,7 +70,7 @@ class StudentStrength extends BaseController
             'is_disable'     => 0
         ]);
 
-        return redirect()->to('/StudentStrength')->with('status', 'Strength Saved');
+        return redirect()->to('/StudentStrength')->with('status', 'विद्यार्थी संख्या यशस्वीरित्या जोडली गेली!');
     }
 
     // edit
@@ -99,7 +99,7 @@ class StudentStrength extends BaseController
         ])->where('id !=', $id)->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', "Another record already exists for $category in this Month/Year!");
+            return redirect()->back()->with('error', "या महिना/वर्षात $category साठी आधीच एक दुसरा रेकॉर्ड अस्तित्वात आहे!");
         }
 
         $model->update($id, [
@@ -109,7 +109,7 @@ class StudentStrength extends BaseController
             'year'           => $year,
         ]);
 
-        return redirect()->to('/StudentStrength')->with('status', 'Strength Updated Successfully');
+        return redirect()->to('/StudentStrength')->with('status', 'विद्यार्थी संख्या यशस्वीरित्या अद्यतनित केली!');
     }
 
     // SOFT DELETE Logic
@@ -120,7 +120,7 @@ class StudentStrength extends BaseController
         // Instead of true delete, we update is_disable to 1
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/StudentStrength')->with('status', 'Record Deleted Successfully');
+        return redirect()->to('/StudentStrength')->with('status', 'विद्यार्थी संख्या यशस्वीरित्या हटवली!');
     }
 
     // export
