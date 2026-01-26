@@ -51,6 +51,12 @@
                 <ul class="navbar-nav ms-auto">
 
                     <li class="nav-item">
+                        <a class="nav-link text-warning" href="<?= base_url('Auth/logout') ?>">
+                            <i class="fas fa-sign-out-alt"></i> बाहेर पडा (Logout)
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link <?= url_is('items*') ? 'active fw-bold border-bottom' : '' ?>" href="<?= base_url('items') ?>">
                             <i class="fas fa-list me-1"></i> वस्तू यादी
                         </a>

@@ -17,12 +17,14 @@ class Filters extends BaseConfig
      *
      * @var array
      */
-    public $aliases = [
-        'csrf'          => CSRF::class,
-        'toolbar'       => DebugToolbar::class,
-        'honeypot'      => Honeypot::class,
-        'invalidchars'  => InvalidChars::class,
-        'secureheaders' => SecureHeaders::class,
+    public array $aliases = [
+        'csrf'          => \CodeIgniter\Filters\CSRF::class,
+        'toolbar'       => \CodeIgniter\Filters\DebugToolbar::class,
+        'honeypot'      => \CodeIgniter\Filters\Honeypot::class,
+        'invalidchars'  => \CodeIgniter\Filters\InvalidChars::class,
+        'secureheaders' => \CodeIgniter\Filters\SecureHeaders::class,
+        // ADD THIS LINE BELOW:
+        'auth'          => \App\Filters\AuthFilter::class,
     ];
 
     /**
@@ -31,16 +33,12 @@ class Filters extends BaseConfig
      *
      * @var array
      */
-    public $globals = [
+    public array $globals = [
         'before' => [
-            // 'honeypot',
-            // 'csrf',
-            // 'invalidchars',
+            'auth' => ['except' => ['Auth', 'Auth/*']] // Protect everything EXCEPT Login controller
         ],
         'after' => [
             'toolbar',
-            // 'honeypot',
-            // 'secureheaders',
         ],
     ];
 
