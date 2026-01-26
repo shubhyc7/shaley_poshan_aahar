@@ -18,22 +18,47 @@ class Entries extends BaseController
     {
         $itemModel = new ItemModel();
         $DailyAaharEntriesModel = new DailyAaharEntriesModel();
+        $db = \Config\Database::connect();
 
-        // 1. Capture Filter Values
         $filterMonth = $this->request->getGet('month') ?? date('n');
         $filterYear  = $this->request->getGet('year') ?? date('Y');
+        $startDate   = "$filterYear-" . str_pad($filterMonth, 2, "0", STR_PAD_LEFT) . "-01";
 
         $data['main_items'] = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
         $data['support_items'] = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
 
-        // 2. Filter Parent Entries by Month and Year
+        // Calculate Monthly Stock Context
+        $monthlyStock = [];
+        foreach (array_merge($data['main_items'], $data['support_items']) as $item) {
+            // 1. Opening: Balance before 1st of selected month
+            $opening = $db->table('stock_transactions')
+                ->select("SUM(CASE WHEN transaction_type IN ('OPENING', 'IN') THEN quantity ELSE -quantity END) as bal", false)
+                ->where(['item_id' => $item['id'], 'transaction_date <' => $startDate, 'is_disable' => 0])
+                ->get()->getRow()->bal ?? 0;
+
+            // 2. Month Inward: Stock received during the filtered month
+            $received = $db->table('stock_transactions')
+                ->selectSum('quantity')
+                ->where(['item_id' => $item['id'], 'transaction_type' => 'IN', 'is_disable' => 0])
+                ->where('MONTH(transaction_date)', $filterMonth)
+                ->where('YEAR(transaction_date)', $filterYear)
+                ->get()->getRow()->quantity ?? 0;
+
+            $monthlyStock[$item['id']] = [
+                'opening' => (float)$opening,
+                'received' => (float)$received,
+                'available' => (float)$opening + (float)$received // Total available to spend this month
+            ];
+        }
+
+        $data['monthly_stock_logic'] = $monthlyStock;
+
         $data['entries'] = $DailyAaharEntriesModel->where('is_disable', 0)
             ->where('MONTH(entry_date)', $filterMonth)
             ->where('YEAR(entry_date)', $filterYear)
             ->orderBy('entry_date', 'DESC')
             ->findAll();
 
-        // Pass filters back to the view
         $data['filterMonth'] = $filterMonth;
         $data['filterYear']  = $filterYear;
 
@@ -205,38 +230,30 @@ class Entries extends BaseController
         // Capture filters from the URL
         $month = $this->request->getGet('month') ?? date('n');
         $year  = $this->request->getGet('year') ?? date('Y');
+        $startDate = "$year-" . str_pad($month, 2, "0", STR_PAD_LEFT) . "-01";
 
-        // 1. Fetch Filtered Parent Entries
+        // 1. Fetch Items and Filtered Parent Entries
+        $mainItems = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
+        $supportItems = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
+        $allItems = array_merge($mainItems, $supportItems);
+
         $entries = $DailyAaharEntriesModel->where('is_disable', 0)
             ->where('MONTH(entry_date)', $month)
             ->where('YEAR(entry_date)', $year)
             ->orderBy('entry_date', 'ASC')
             ->findAll();
 
-        // 2. Fetch all Item Masters (to create columns)
-        $mainItems = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
-        $supportItems = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
-
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // 3. Set Dynamic Headers
-        $headers = ['तारीख', 'इयत्ता', 'एकूण', 'उपस्थित'];
-
-        // Add Main Item names to header list
-        foreach ($mainItems as $mi) {
-            $headers[] = $mi['item_name'];
-        }
-        // Add Support Item names to header list
-        foreach ($supportItems as $si) {
-            $headers[] = $si['item_name'];
+        // 2. Set Headers
+        $headers = ['अ.क्र.', 'तारीख', 'इयत्ता', 'एकूण', 'उपस्थित'];
+        foreach ($allItems as $it) {
+            $headers[] = $it['item_name'];
         }
 
-        $colIndex = 1;
-        foreach ($headers as $headerText) {
-            $colLetter = $this->getColumnLetter($colIndex);
-            $sheet->setCellValue($colLetter . '1', $headerText);
-            $colIndex++;
+        foreach ($headers as $idx => $title) {
+            $sheet->setCellValue($this->getColumnLetter($idx + 1) . '1', $title);
         }
 
         // Header Styling
@@ -247,49 +264,95 @@ class Entries extends BaseController
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
         ]);
 
-        // 4. Fill Data Rows
-        $rowNum = 2;
+        // 3. ADD MONTHLY RUNTIME STOCK ROW (Row 2)
+        $sheet->setCellValue('A2', 'शिल्लक साठा (Opening + In)');
+        $sheet->mergeCells('A2:E2');
+        $sheet->getStyle('A2')->getFont()->setBold(true);
+
+        $col = 6;
+        $monthlyAvailable = [];
+        foreach ($allItems as $item) {
+            // Calculate Opening + Received for the month
+            $opening = $db->table('stock_transactions')
+                ->select("SUM(CASE WHEN transaction_type IN ('OPENING', 'IN') THEN quantity ELSE -quantity END) as bal", false)
+                ->where(['item_id' => $item['id'], 'transaction_date <' => $startDate, 'is_disable' => 0])
+                ->get()->getRow()->bal ?? 0;
+
+            $received = $db->table('stock_transactions')
+                ->selectSum('quantity')
+                ->where(['item_id' => $item['id'], 'transaction_type' => 'IN', 'is_disable' => 0])
+                ->where('MONTH(transaction_date)', $month)
+                ->where('YEAR(transaction_date)', $year)
+                ->get()->getRow()->quantity ?? 0;
+
+            $available = (float)$opening + (float)$received;
+            $monthlyAvailable[$item['id']] = $available;
+
+            $sheet->setCellValue($this->getColumnLetter($col) . '2', number_format($available, 3));
+            $col++;
+        }
+        // Style the Stock Row
+        $sheet->getStyle("A2:{$lastCol}2")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
+
+        // 4. Fill Entry Data Rows
+        $rowNum = 3;
+        $srNo = 1;
+        $itemTotals = [];
         foreach ($entries as $entry) {
-            // Fetch all item quantities for this specific entry ID
             $childItems = $db->table('daily_aahar_entries_items')
                 ->where(['daily_aahar_entries_id' => $entry['id'], 'is_disable' => 0])
                 ->get()->getResultArray();
 
-            // Create a lookup map [item_id => qty]
-            $itemQtyMap = array_column($childItems, 'qty', 'item_id');
+            $qtyMap = array_column($childItems, 'qty', 'item_id');
 
-            // Static Columns
-            $sheet->setCellValue('A' . $rowNum, date('d-M-Y', strtotime($entry['entry_date'])));
-            $sheet->setCellValue('B' . $rowNum, 'Class ' . $entry['category']);
-            $sheet->setCellValue('C' . $rowNum, $entry['total_students']);
-            $sheet->setCellValue('D' . $rowNum, $entry['present_students']);
+            $sheet->setCellValue('A' . $rowNum, $srNo++);
+            $sheet->setCellValue('B' . $rowNum, date('d-m-Y', strtotime($entry['entry_date'])));
+            $sheet->setCellValue('C' . $rowNum, $entry['category']);
+            $sheet->setCellValue('D' . $rowNum, $entry['total_students']);
+            $sheet->setCellValue('E' . $rowNum, $entry['present_students']);
 
-            $currentCol = 5;
-
-            // Dynamic Main Item Columns
-            foreach ($mainItems as $mi) {
-                $qty = $itemQtyMap[$mi['id']] ?? 0;
-                $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, number_format($qty, 3));
+            $currentCol = 6;
+            foreach ($allItems as $it) {
+                $qty = $qtyMap[$it['id']] ?? 0;
+                $itemTotals[$it['id']] = ($itemTotals[$it['id']] ?? 0) + $qty;
+                $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, $qty > 0 ? number_format($qty, 3) : '-');
                 $currentCol++;
             }
-
-            // Dynamic Support Item Columns
-            foreach ($supportItems as $si) {
-                $qty = $itemQtyMap[$si['id']] ?? 0;
-                $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, number_format($qty, 3));
-                $currentCol++;
-            }
-
             $rowNum++;
         }
 
-        // Auto-size all columns
-        for ($i = 1; $i < $currentCol; $i++) {
+        // 5. ADD SUMMARY FOOTER ROWS
+        // Row: Total Used
+        $sheet->setCellValue('A' . $rowNum, 'एकूण वापर (Total Used)');
+        $sheet->mergeCells("A$rowNum:E$rowNum");
+        $col = 6;
+        foreach ($allItems as $it) {
+            $sheet->setCellValue($this->getColumnLetter($col) . $rowNum, number_format($itemTotals[$it['id']] ?? 0, 3));
+            $col++;
+        }
+        $sheet->getStyle("A$rowNum:{$lastCol}$rowNum")->getFont()->setBold(true);
+        $rowNum++;
+
+        // Row: Remaining Stock
+        $sheet->setCellValue('A' . $rowNum, 'अखेरची शिल्लक (Remaining Stock)');
+        $sheet->mergeCells("A$rowNum:E$rowNum");
+        $col = 6;
+        foreach ($allItems as $it) {
+            $remaining = $monthlyAvailable[$it['id']] - ($itemTotals[$it['id']] ?? 0);
+            $sheet->setCellValue($this->getColumnLetter($col) . $rowNum, number_format($remaining, 3));
+            $col++;
+        }
+        $sheet->getStyle("A$rowNum:{$lastCol}$rowNum")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'C00000']], // Red color for remaining
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']]
+        ]);
+
+        // Final Auto-size
+        for ($i = 1; $i <= count($headers); $i++) {
             $sheet->getColumnDimension($this->getColumnLetter($i))->setAutoSize(true);
         }
 
-        // 5. Export File
-        $filename = 'दैनंदिन_बहु-वस्तू_नोंद_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'दैनंदिन_बहु-वस्तू_नोंद_' . $month . '_' . $year . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

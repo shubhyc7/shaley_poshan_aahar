@@ -54,47 +54,57 @@
             <form action="<?= base_url('entries/store') ?>" method="POST" id="entryForm">
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle mb-0">
-                        <thead class="table-dark">
+                        <thead class="table-dark text-center">
                             <tr>
-                                <th style="min-width: 140px;">तारीख</th>
-                                <th style="min-width: 140px;">इयत्ता </th>
-                                <th style="width: 100px;">एकूण</th>
-                                <th style="width: 100px;">उपस्थित</th>
+                                <th style="width: 50px;">अ.क्र.</th>
+                                <th style="min-width: 10px;">तारीख</th>
+                                <th style="width: 150px;">इयत्ता</th>
+                                <th style="width: 70px;">एकूण</th>
+                                <th style="width: 70px;">उपस्थित</th>
                                 <?php foreach ($main_items as $mi) : ?>
-                                    <th class="text-center bg-primary small"><?= $mi['item_name'] ?></th>
+                                    <th class="bg-primary small"><?= $mi['item_name'] ?></th>
                                 <?php endforeach; ?>
                                 <?php foreach ($support_items as $si) : ?>
-                                    <th class="text-center bg-secondary small"><?= $si['item_name'] ?></th>
+                                    <th class="bg-secondary small"><?= $si['item_name'] ?></th>
                                 <?php endforeach; ?>
-                                <th class="text-center">क्रिया</th>
+                                <th>क्रिया</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="table-info">
-                                <td>
-                                    <input type="date" id="entry_date" name="entry_date" class="form-control form-control-sm mb-1" value="<?= date('Y-m-d') ?>">
-
+                            <tr class="table-warning border-primary" style="font-size: 0.8rem;">
+                                <td colspan="5" class="text-end fw-bold text-dark">
+                                    शिल्लक साठा (Month Stock):<br>
+                                    <small class="text-muted">(Opening + Received)</small>
                                 </td>
+                                <?php foreach (array_merge($main_items, $support_items) as $item) :
+                                    $stock = $monthly_stock_logic[$item['id']];
+                                ?>
+                                    <td class="text-center p-1">
+                                        <div class="fw-bold"><?= number_format($stock['available'], 3) ?></div>
+                                        <a href="<?= base_url('Stock?item_id=' . $item['id']) ?>" class="btn btn-xs btn-outline-dark py-0" style="font-size: 0.6rem;">+ Stock</a>
+                                    </td>
+                                <?php endforeach; ?>
+                                <td></td>
+                            </tr>
 
+                            <tr class="table-info">
+                                <td>#</td>
+                                <td><input type="date" name="entry_date" id="entry_date" class="form-control form-control-sm" value="<?= date('Y-m-d') ?>"></td>
                                 <td>
-                                    <select id="category" name="category" class="form-select form-select-sm">
+                                    <select name="category" id="category" class="form-select form-select-sm">
                                         <option value="6-8">6-8</option>
                                         <option value="9-10">9-10</option>
                                     </select>
                                     <input type="hidden" name="student_strength" id="student_strength_val">
                                 </td>
-                                <td>
-                                    <small class="text-muted" style="font-size: 0.7rem;"><span id="max_strength">0</span></small>
-                                </td>
-                                <td>
-                                    <input type="number" id="present_students" name="present_students" class="form-control form-control-sm" placeholder="Qty">
-                                </td>
+                                <td><small id="max_strength">0</small></td>
+                                <td><input type="number" name="present_students" id="present_students" class="form-control form-control-sm"></td>
 
                                 <?php foreach ($main_items as $mi) : ?>
-                                    <td class="text-center main-item-cell">
-                                        <input type="checkbox" name="main_item_id[]" value="<?= $mi['id'] ?>" class="item-chk main-item-chk mb-1">
+                                    <td class="text-center">
+                                        <input type="checkbox" name="main_item_id[]" value="<?= $mi['id'] ?>" class="main-item-chk">
                                         <input type="hidden" name="main_item_qty[]" id="qty_<?= $mi['id'] ?>" value="0">
-                                        <div class="small fw-bold text-primary display-qty" id="display_<?= $mi['id'] ?>" style="font-size: 0.75rem;">0.000</div>
+                                        <div class="small fw-bold text-primary display-qty" id="display_<?= $mi['id'] ?>">0.000</div>
                                     </td>
                                 <?php endforeach; ?>
 
@@ -102,91 +112,63 @@
                                     <td class="text-center">
                                         <input type="hidden" name="support_item_id[]" value="<?= $si['id'] ?>">
                                         <input type="hidden" name="support_qty[]" id="qty_<?= $si['id'] ?>" value="0">
-                                        <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>" style="font-size: 0.75rem;">0.000</div>
+                                        <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>">0.000</div>
                                     </td>
                                 <?php endforeach; ?>
-
-                                <td class="text-center">
-                                    <button type="submit" class="btn btn-success btn-sm px-3">जतन करा</button>
-                                </td>
+                                <td class="text-center"><button type="submit" class="btn btn-success btn-sm w-100">Save</button></td>
                             </tr>
 
-                            <?php if (empty($entries)) : ?>
-                                <tr>
-                                    <td colspan="<?= (count($main_items) + count($support_items) + 5) ?>" class="text-center py-3 text-muted">नोंद आढळली नाही.</td>
+                            <?php
+                            $db = \Config\Database::connect();
+                            $sr = 1;
+                            $sumTotal = 0;
+                            $sumPresent = 0;
+                            $itemTotals = [];
+                            foreach ($entries as $row) :
+                                $sumTotal += $row['total_students'];
+                                $sumPresent += $row['present_students'];
+                                $childItems = $db->table('daily_aahar_entries_items')->where(['daily_aahar_entries_id' => $row['id'], 'is_disable' => 0])->get()->getResultArray();
+                                $qtyMap = array_column($childItems, 'qty', 'item_id');
+                            ?>
+                                <tr class="bg-white">
+                                    <td class="text-center small"><?= $sr++ ?></td>
+                                    <td class="small"><?= date('d-m-Y', strtotime($row['entry_date'])) ?></td>
+                                    <td class="text-center small"><?= $row['category'] ?></td>
+                                    <td class="text-center small"><?= $row['total_students'] ?></td>
+                                    <td class="text-center small text-success fw-bold"><?= $row['present_students'] ?></td>
+                                    <?php foreach (array_merge($main_items, $support_items) as $it) :
+                                        $q = $qtyMap[$it['id']] ?? 0;
+                                        $itemTotals[$it['id']] = ($itemTotals[$it['id']] ?? 0) + $q;
+                                    ?>
+                                        <td class="text-center small"><?= $q > 0 ? number_format($q, 3) : '-' ?></td>
+                                    <?php endforeach; ?>
+                                    <td class="text-center">
+                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="text-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></a>
+                                    </td>
                                 </tr>
-                            <?php else : ?>
-                                <?php
-                                $db = \Config\Database::connect();
-
-                                // Initialize Totals
-                                $sumTotalStudents = 0;
-                                $sumPresentStudents = 0;
-                                $itemTotals = []; // To store sums for each item_id
-
-                                foreach ($entries as $row) :
-                                    $sumTotalStudents += $row['total_students'];
-                                    $sumPresentStudents += $row['present_students'];
-
-                                    $allChildItems = $db->table('daily_aahar_entries_items')
-                                        ->where(['daily_aahar_entries_id' => $row['id'], 'is_disable' => 0])
-                                        ->get()->getResultArray();
-
-                                    $itemQtyMap = array_column($allChildItems, 'qty', 'item_id');
-                                ?>
-                                    <tr class="bg-white">
-                                        <td class="small fw-bold"><?= date('d-M-Y', strtotime($row['entry_date'])) ?></td>
-                                        <td><span class="badge bg-light text-dark border">इयत्ता <?= $row['category'] ?></span></td>
-                                        <td class="text-center small"><?= $row['total_students'] ?></td>
-                                        <td class="text-center fw-bold small text-success"><?= $row['present_students'] ?></td>
-
-                                        <?php foreach ($main_items as $mi) :
-                                            $qty = $itemQtyMap[$mi['id']] ?? 0;
-                                            $itemTotals[$mi['id']] = ($itemTotals[$mi['id']] ?? 0) + $qty;
-                                        ?>
-                                            <td class="text-center small">
-                                                <?= ($qty > 0) ? '<span class="text-primary fw-bold">' . number_format($qty, 3) . '</span>' : '<span class="text-light">0.000</span>' ?>
-                                            </td>
-                                        <?php endforeach; ?>
-
-                                        <?php foreach ($support_items as $si) :
-                                            $qty = $itemQtyMap[$si['id']] ?? 0;
-                                            $itemTotals[$si['id']] = ($itemTotals[$si['id']] ?? 0) + $qty;
-                                        ?>
-                                            <td class="text-center small">
-                                                <?= ($qty > 0) ? '<span class="text-secondary fw-bold">' . number_format($qty, 3) . '</span>' : '<span class="text-light">0.000</span>' ?>
-                                            </td>
-                                        <?php endforeach; ?>
-
-                                        <td class="text-center">
-                                            <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="text-danger" onclick="return confirm('ही नोंद हटवायची?')">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                            <?php endforeach; ?>
                         </tbody>
 
-                        <?php if (!empty($entries)) : ?>
-                            <tfoot class="table-light fw-bold border-top border-dark">
-                                <tr>
-                                    <td colspan="2" class="text-end">एकूण (Total):</td>
-                                    <td class="text-center"><?= $sumTotalStudents ?></td>
-                                    <td class="text-center text-success"><?= $sumPresentStudents ?></td>
-
-                                    <?php foreach ($main_items as $mi) : ?>
-                                        <td class="text-center text-primary"><?= number_format($itemTotals[$mi['id']] ?? 0, 3) ?></td>
-                                    <?php endforeach; ?>
-
-                                    <?php foreach ($support_items as $si) : ?>
-                                        <td class="text-center text-secondary"><?= number_format($itemTotals[$si['id']] ?? 0, 3) ?></td>
-                                    <?php endforeach; ?>
-
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                        <?php endif; ?>
+                        <tfoot class="table-dark">
+                            <tr>
+                                <td colspan="3" class="text-end">एकूण वापर (Used):</td>
+                                <td class="text-center"><?= $sumTotal ?></td>
+                                <td class="text-center"><?= $sumPresent ?></td>
+                                <?php foreach (array_merge($main_items, $support_items) as $it) : ?>
+                                    <td class="text-center text-warning"><?= number_format($itemTotals[$it['id']] ?? 0, 3) ?></td>
+                                <?php endforeach; ?>
+                                <td></td>
+                            </tr>
+                            <tr class="bg-black">
+                                <td colspan="5" class="text-end fw-bold text-info">शिल्लक साठा (Remaining Stock):</td>
+                                <?php foreach (array_merge($main_items, $support_items) as $it) :
+                                    $rem = ($monthly_stock_logic[$it['id']]['available']) - ($itemTotals[$it['id']] ?? 0);
+                                ?>
+                                    <td class="text-center fw-bold text-info"><?= number_format($rem, 3) ?></td>
+                                <?php endforeach; ?>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </form>
