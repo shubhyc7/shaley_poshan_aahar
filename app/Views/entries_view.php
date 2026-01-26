@@ -81,7 +81,9 @@
                                 ?>
                                     <td class="text-center p-1">
                                         <div class="fw-bold"><?= number_format($stock['available'], 3) ?></div>
-                                        <a href="<?= base_url('Stock?item_id=' . $item['id']) ?>" class="btn btn-xs btn-outline-dark py-0" style="font-size: 0.6rem;">+ Stock</a>
+                                        <a href="<?= base_url('Stock?item_id=' . $item['id'] . '&add_mode=1') ?>" class="btn btn-xs btn-outline-dark py-0" style="font-size: 0.6rem;">
+                                            + Stock
+                                        </a>
                                     </td>
                                 <?php endforeach; ?>
                                 <td></td>

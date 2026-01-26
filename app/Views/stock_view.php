@@ -191,18 +191,39 @@
 </div>
 
 <script src="<?php echo base_url('js/jquery-3.6.0.min.js'); ?>"></script>
-
 <script>
-    $('.edit-stock-btn').on('click', function() {
-        const id = $(this).data('id');
-        $.get('<?= base_url('Stock/edit/') ?>/' + id, function(data) {
-            $('#edit_id').val(data.id);
-            $('#edit_type').val(data.transaction_type);
-            $('#edit_date').val(data.transaction_date);
-            $('#edit_item_id').val(data.item_id);
-            $('#edit_qty').val(data.quantity);
-            $('#edit_remarks').val(data.remarks);
+    $(document).ready(function() {
+        // Check if URL has item_id and add_mode parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('item_id');
+        const addMode = urlParams.get('add_mode');
+
+        if (addMode === '1' && itemId) {
+            // 1. Pre-select the correct item in the modal dropdown
+            $('#edit_item_id').val(itemId);
+
+            // 2. Ensure type is set to IN (since we are adding stock)
+            $('#edit_type').val('IN');
+
+            // 3. Clear any previous ID (to ensure it's a new entry, not an edit)
+            $('#edit_id').val('');
+
+            // 4. Open the modal automatically
             $('#addStockModal').modal('show');
+        }
+
+        // Your existing Edit script
+        $('.edit-stock-btn').on('click', function() {
+            const id = $(this).data('id');
+            $.get('<?= base_url('Stock/edit/') ?>/' + id, function(data) {
+                $('#edit_id').val(data.id);
+                $('#edit_type').val(data.transaction_type);
+                $('#edit_date').val(data.transaction_date);
+                $('#edit_item_id').val(data.item_id);
+                $('#edit_qty').val(data.quantity);
+                $('#edit_remarks').val(data.remarks);
+                $('#addStockModal').modal('show');
+            });
         });
     });
 </script>
