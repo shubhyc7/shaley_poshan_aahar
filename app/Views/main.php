@@ -34,6 +34,40 @@
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
         }
+
+        /* Responsive Header adjustment without changing HTML */
+        @media (max-width: 768px) {
+
+            /* Target the card-header with d-flex */
+            .card-header.d-flex {
+                flex-direction: column !important;
+                /* Forces buttons below heading */
+                align-items: center !important;
+                text-align: center;
+            }
+
+            /* Add space between heading and button container */
+            .card-header.d-flex h5 {
+                margin-bottom: 15px !important;
+            }
+
+            /* Make the button container full width */
+            .card-header.d-flex>div {
+                display: flex;
+                flex-direction: column;
+                /* Stack buttons on top of each other */
+                width: 100%;
+                gap: 10px;
+                /* Space between the two buttons */
+            }
+
+            /* Remove the 'me-2' margin and make buttons full width */
+            .card-header.d-flex .btn {
+                margin-right: 0 !important;
+                width: 100%;
+                display: block;
+            }
+        }
     </style>
 </head>
 
