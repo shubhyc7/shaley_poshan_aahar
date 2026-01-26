@@ -59,7 +59,8 @@ class Entries extends BaseController
         $data['entries'] = $DailyAaharEntriesModel->where('is_disable', 0)
             ->where('MONTH(entry_date)', $filterMonth)
             ->where('YEAR(entry_date)', $filterYear)
-            ->orderBy('entry_date', 'DESC')
+            // ->orderBy('entry_date', 'DESC')
+            ->orderBy('entry_date', 'ASC')
             ->findAll();
 
         $data['filterMonth'] = $filterMonth;
@@ -239,6 +240,7 @@ class Entries extends BaseController
         $mainItems = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
         $supportItems = $itemModel->where(['item_type' => 'SUPPORT', 'is_disable' => 0])->findAll();
         $allItems = array_merge($mainItems, $supportItems);
+        $itemCount = count($allItems);
 
         $entries = $DailyAaharEntriesModel->where('is_disable', 0)
             ->where('MONTH(entry_date)', $month)
@@ -263,8 +265,8 @@ class Entries extends BaseController
         $lastCol = $this->getColumnLetter(count($headers));
         $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
         ]);
 
         // 3. ADD MONTHLY RUNTIME STOCK ROW (Row 2)
@@ -275,7 +277,6 @@ class Entries extends BaseController
         $col = 6;
         $monthlyAvailable = [];
         foreach ($allItems as $item) {
-            // Calculate Opening + Received for the month
             $opening = $db->table('stock_transactions')
                 ->select("SUM(CASE WHEN transaction_type IN ('OPENING', 'IN') THEN quantity ELSE -quantity END) as bal", false)
                 ->where(['item_id' => $item['id'], 'transaction_date <' => $startDate, 'is_disable' => 0])
@@ -291,11 +292,11 @@ class Entries extends BaseController
             $available = (float)$opening + (float)$received;
             $monthlyAvailable[$item['id']] = $available;
 
-            $sheet->setCellValue($this->getColumnLetter($col) . '2', number_format($available, 3));
+            $sheet->setCellValue($this->getColumnLetter($col) . '2', $available);
             $col++;
         }
         // Style the Stock Row
-        $sheet->getStyle("A2:{$lastCol}2")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
+        $sheet->getStyle("A2:{$lastCol}2")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('FFF2CC');
 
         // 4. Fill Entry Data Rows
         $rowNum = 3;
@@ -318,7 +319,11 @@ class Entries extends BaseController
             foreach ($allItems as $it) {
                 $qty = $qtyMap[$it['id']] ?? 0;
                 $itemTotals[$it['id']] = ($itemTotals[$it['id']] ?? 0) + $qty;
-                $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, $qty > 0 ? number_format($qty, 3) : '-');
+                if ($qty > 0) {
+                    $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, $qty);
+                } else {
+                    $sheet->setCellValue($this->getColumnLetter($currentCol) . $rowNum, '-');
+                }
                 $currentCol++;
             }
             $rowNum++;
@@ -330,7 +335,7 @@ class Entries extends BaseController
         $sheet->mergeCells("A$rowNum:E$rowNum");
         $col = 6;
         foreach ($allItems as $it) {
-            $sheet->setCellValue($this->getColumnLetter($col) . $rowNum, number_format($itemTotals[$it['id']] ?? 0, 3));
+            $sheet->setCellValue($this->getColumnLetter($col) . $rowNum, $itemTotals[$it['id']] ?? 0);
             $col++;
         }
         $sheet->getStyle("A$rowNum:{$lastCol}$rowNum")->getFont()->setBold(true);
@@ -342,12 +347,21 @@ class Entries extends BaseController
         $col = 6;
         foreach ($allItems as $it) {
             $remaining = $monthlyAvailable[$it['id']] - ($itemTotals[$it['id']] ?? 0);
-            $sheet->setCellValue($this->getColumnLetter($col) . $rowNum, number_format($remaining, 3));
+            $sheet->setCellValue($this->getColumnLetter($col) . $rowNum, $remaining);
             $col++;
         }
+
+        // --- NEW: APPLY THREE DECIMAL FORMATTING TO ALL NUMERIC ITEM COLUMNS ---
+        // Start from Column F (Index 6) to the last column, for all rows from 2 to footer
+        $firstItemColLetter = 'F';
+        $sheet->getStyle("{$firstItemColLetter}2:{$lastCol}{$rowNum}")
+            ->getNumberFormat()
+            ->setFormatCode('0.000');
+        // ----------------------------------------------------------------------
+
         $sheet->getStyle("A$rowNum:{$lastCol}$rowNum")->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'C00000']], // Red color for remaining
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']]
+            'font' => ['bold' => true, 'color' => ['rgb' => 'C00000']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']]
         ]);
 
         // Final Auto-size
@@ -360,7 +374,7 @@ class Entries extends BaseController
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
 
-        $writer = new Xlsx($spreadsheet);
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
     }

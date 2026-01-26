@@ -170,9 +170,9 @@ class Stock extends BaseController
         foreach ($filterItems as $item) {
             $prev = $db->table('stock_transactions')
                 ->select("SUM(CASE 
-                WHEN UPPER(transaction_type) IN ('OPENING', 'IN') THEN quantity 
-                WHEN UPPER(transaction_type) = 'OUT' THEN -quantity 
-                ELSE 0 END) as bal", false)
+            WHEN UPPER(transaction_type) IN ('OPENING', 'IN') THEN quantity 
+            WHEN UPPER(transaction_type) = 'OUT' THEN -quantity 
+            ELSE 0 END) as bal", false)
                 ->where('item_id', $item['id'])
                 ->where('transaction_date <', $startDate)
                 ->where('is_disable', 0)
@@ -209,16 +209,16 @@ class Stock extends BaseController
             $sheet->setCellValue($col . '3', $h);
             $col++;
         }
+
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
-                'fillType' => Fill::FILL_SOLID,
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'startColor' => ['rgb' => '4472C4']
             ],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
         ];
         $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
-        // $sheet->getStyle('A2:G2')->applyFromArray($headerStyle);
         $sheet->getStyle('A3:G3')->applyFromArray($headerStyle);
 
         // 5. Fill Data with Running Balance Logic
@@ -226,7 +226,6 @@ class Stock extends BaseController
         $tIn = 0;
         $tOut = 0;
         $currentRunning = $openingBalances;
-
 
         foreach ($transactions as $tr) {
             $id = $tr['item_id'];
@@ -238,32 +237,41 @@ class Stock extends BaseController
             if ($type == 'OUT') {
                 $currentRunning[$id] -= $qty;
                 $tOut += $qty;
-                $displayQty = "-" . number_format($qty, 3);
+                $sheet->setCellValue('E' . $row, $qty * -1); // Use actual negative number for formatting
             } else {
                 $currentRunning[$id] += $qty;
                 $tIn += $qty;
-                $displayQty = "+" . number_format($qty, 3);
+                $sheet->setCellValue('E' . $row, $qty);
             }
 
             $sheet->setCellValue('A' . $row, date('d-m-Y', strtotime($tr['transaction_date'])));
             $sheet->setCellValue('B' . $row, $tr['item_name'] . ' (' . $tr['unit'] . ')');
             $sheet->setCellValue('C' . $row, $tr['transaction_type']);
-            $sheet->setCellValue('D' . $row, number_format($open, 3));
-            $sheet->setCellValue('E' . $row, $displayQty);
-            $sheet->setCellValue('F' . $row, number_format($currentRunning[$id], 3));
+            $sheet->setCellValue('D' . $row, $open);
+            $sheet->setCellValue('F' . $row, $currentRunning[$id]);
             $sheet->setCellValue('G' . $row, $tr['remarks']);
             $row++;
         }
 
+        // --- APPLY THREE DECIMAL FORMATTING ---
+        // Column D: Opening, E: Qty, F: Closing
+        $sheet->getStyle("D4:F" . ($row - 1))->getNumberFormat()->setFormatCode('0.000');
+        // Add red color for negative numbers in column E
+        $sheet->getStyle("E4:E" . ($row - 1))->getNumberFormat()->setFormatCode('[Red]-0.000;0.000');
+
         // 6. Add Summary Footer
         $sheet->setCellValue('A' . $row, 'एकूण सारांश');
         $sheet->mergeCells("A$row:C$row");
-        $sheet->setCellValue('D' . $row, number_format($totalMonthOpening, 3));
+
+        $sheet->setCellValue('D' . $row, $totalMonthOpening);
         $sheet->setCellValue('E' . $row, "IN: +$tIn | OUT: -$tOut");
-        $sheet->setCellValue('F' . $row, number_format(($totalMonthOpening + $tIn - $tOut), 3));
+        $sheet->setCellValue('F' . $row, ($totalMonthOpening + $tIn - $tOut));
+
+        // Format footer numbers
+        $sheet->getStyle("D$row")->getNumberFormat()->setFormatCode('0.000');
+        $sheet->getStyle("F$row")->getNumberFormat()->setFormatCode('"Closing: "0.000'); // Prefix text within format
 
         // Styling
-        $sheet->getStyle("A3:G3")->getFont()->setBold(true);
         $sheet->getStyle("A$row:G$row")->getFont()->setBold(true);
         foreach (range('A', 'G') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
@@ -273,7 +281,7 @@ class Stock extends BaseController
         $filename = 'स्टॉक_नोंद_' . $month . '_' . $year . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
-        (new Xlsx($spreadsheet))->save('php://output');
+        (new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet))->save('php://output');
         exit;
     }
 }

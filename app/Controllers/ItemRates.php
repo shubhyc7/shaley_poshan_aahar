@@ -132,12 +132,12 @@ class ItemRates extends BaseController
     public function export()
     {
         $rateModel = new RateModel();
-        // getRatesWithItems already filters by is_disable = 0
         $rates = $rateModel->getRatesWithItems();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
+        // Headers
         $sheet->setCellValue('A1', 'क्रमांक');
         $sheet->setCellValue('B1', 'वस्तू');
         $sheet->setCellValue('C1', 'वस्तू प्रकार');
@@ -165,12 +165,19 @@ class ItemRates extends BaseController
             $sheet->setCellValue('D' . $row, 'इयत्ता ' . $rate['category']);
             $sheet->setCellValue('E' . $row, date("F", mktime(0, 0, 0, $rate['month'], 10)));
             $sheet->setCellValue('F' . $row, $rate['year']);
-            $sheet->setCellValue('G' . $row, number_format($rate['per_student_qty'], 3));
+            $sheet->setCellValue('G' . $row, $rate['per_student_qty']);
             $sheet->setCellValue('H' . $row, $rate['unit']);
             $row++;
         }
 
-        foreach (range('A', 'G') as $col) {
+        // --- NEW CODE: SET DECIMAL FORMAT FOR COLUMN G ---
+        // '0.000' ensures exactly 3 decimal places are shown (0.1 becomes 0.100)
+        $sheet->getStyle('G2:G' . ($row - 1))
+            ->getNumberFormat()
+            ->setFormatCode('0.000');
+        // ------------------------------------------------
+
+        foreach (range('A', 'H') as $col) { // Fixed range to include H
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

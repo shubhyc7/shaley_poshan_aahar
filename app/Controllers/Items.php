@@ -118,7 +118,7 @@ class Items extends BaseController
         foreach ($items as $item) {
             $sheet->setCellValue('A' . $row, $item['id']);
             $sheet->setCellValue('B' . $row, $item['item_name']);
-            $sheet->setCellValue('C' . $row, $item['item_type']);
+            $sheet->setCellValue('C' . $row, $item['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक');
             $sheet->setCellValue('D' . $row, $item['unit']);
             $row++;
         }
