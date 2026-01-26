@@ -16,6 +16,9 @@ class Entries extends BaseController
     // entries_view
     public function index()
     {
+        // Run the backup check
+        $this->handleAutoBackup();
+
         $itemModel = new ItemModel();
         $DailyAaharEntriesModel = new DailyAaharEntriesModel();
         $db = \Config\Database::connect();
@@ -371,5 +374,74 @@ class Entries extends BaseController
             $num = intval($num / 26) - 1;
         }
         return $letter;
+    }
+
+    private function handleAutoBackup()
+    {
+        // 1. Set Timezone to India immediately
+        date_default_timezone_set('Asia/Kolkata');
+
+        $backupPath = WRITEPATH . 'backups/';
+        if (!is_dir($backupPath)) {
+            mkdir($backupPath, 0777, true);
+        }
+
+        $latestFileTime = 0;
+        $files = glob($backupPath . "*.sql");
+        if ($files) {
+            $latestFileTime = max(array_map('filemtime', $files));
+        }
+
+        // Check if 1 hour (3600 seconds) has passed
+        if (time() - $latestFileTime > 3600) {
+            $this->generatePHPBackup($backupPath);
+        }
+    }
+
+    private function generatePHPBackup($path)
+    {
+        date_default_timezone_set('Asia/Kolkata');
+
+        $db = \Config\Database::connect();
+        $tables = $db->listTables();
+
+        // Header for a standard SQL file
+        $output = "-- Shaley Poshan Aahar Backup\n";
+        $output .= "-- Generated: " . date('Y-m-d H:i:s') . " (IST)\n";
+        $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+        $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+
+        foreach ($tables as $table) {
+            // ADD DROP TABLE: This makes the file 'Import-Ready'
+            $output .= "DROP TABLE IF EXISTS `$table`;\n";
+
+            // Create Table Syntax
+            $query = $db->query("SHOW CREATE TABLE `$table`")->getRowArray();
+            $output .= "\n" . $query['Create Table'] . ";\n\n";
+
+            // Fetch Data
+            $rows = $db->table($table)->get()->getResultArray();
+            if (!empty($rows)) {
+                $output .= "-- Data for table `$table` --\n";
+                foreach ($rows as $row) {
+                    // Properly escape data for SQL injection prevention and special characters
+                    $escapedValues = array_map(function ($value) use ($db) {
+                        if ($value === null) return 'NULL';
+                        return $db->escape($value);
+                    }, $row);
+
+                    $output .= "INSERT INTO `$table` (`" . implode("`, `", array_keys($row)) . "`) VALUES (" . implode(", ", array_values($escapedValues)) . ");\n";
+                }
+            }
+            $output .= "\n-- --------------------------------------------------------\n";
+        }
+
+        $output .= "\nSET FOREIGN_KEY_CHECKS=1;";
+
+        // Filename with readable date and time
+        $filename = 'db_full_bk_' . date('Y_m_d_H_i') . '.sql';
+        file_put_contents($path . $filename, $output);
+
+        // REMOVED cleanupOldBackups($path) call to keep all files permanently
     }
 }
