@@ -124,7 +124,10 @@
                     <div class="col-6"><label>वर्ष</label><input type="number" name="year" class="form-control" value="<?= date('Y') ?>"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="submit" class="btn btn-primary w-100">जतन करा</button></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
+                <button type="submit" class="btn btn-primary">जतन करा</button>
+            </div>
         </form>
     </div>
 </div>
@@ -166,7 +169,10 @@
                     <div class="col-6"><label>वर्ष</label><input type="number" name="year" id="edit_year" class="form-control"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="submit" class="btn btn-warning w-100">अपडेट करा</button></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
+                <button type="submit" class="btn btn-warning">अपडेट करा</button>
+            </div>
         </form>
     </div>
 </div>

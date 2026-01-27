@@ -146,7 +146,7 @@
                                         <td class="text-center small"><?= $q > 0 ? number_format($q, 3) : '-' ?></td>
                                     <?php endforeach; ?>
                                     <td class="text-center">
-                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="text-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></a>
+                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

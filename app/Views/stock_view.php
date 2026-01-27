@@ -93,8 +93,8 @@
                             <td class="text-end fw-bold text-primary"><?= number_format($row['closing_bal'], 3) ?></td>
                             <td class="text-center">
                                 <?php if ($row['transaction_type'] != 'OUT') : ?>
-                                    <button class="btn btn-sm btn-link edit-stock-btn" data-id="<?= $row['id'] ?>"><i class="fas fa-edit"></i></button>
-                                    <a href="<?= base_url("Stock/delete/{$row['id']}?month=$month&year=$year&item_id=$selected_item") ?>" class="text-danger p-1" onclick="return confirm('हटवायचे?')"><i class="fas fa-trash"></i></a>
+                                    <button class="btn btn-sm btn-outline-primary edit-stock-btn" data-id="<?= $row['id'] ?>"><i class="fas fa-edit"></i></button>
+                                    <a href="<?= base_url("Stock/delete/{$row['id']}?month=$month&year=$year&item_id=$selected_item") ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')"><i class="fas fa-trash"></i></a>
                                 <?php else : ?>
                                     <i class="fas fa-lock text-muted" title="Entry Screen Linked"></i>
                                 <?php endif; ?>
@@ -186,7 +186,10 @@
                     <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
-            <div class="modal-footer"><button type="submit" class="btn btn-primary w-100">जतन करा</button></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
+                <button type="submit" class="btn btn-primary">जतन करा</button>
+            </div>
         </form>
     </div>
 </div>

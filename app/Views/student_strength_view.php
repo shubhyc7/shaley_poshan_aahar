@@ -76,10 +76,10 @@
                             <td><?= date("F", mktime(0, 0, 0, $row['month'], 10)) ?> - <?= $row['year'] ?></td>
                             <td><strong><?= $row['total_students'] ?></strong></td>
                             <td>
-                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="<?= $row['id'] ?>">
+                                <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= $row['id'] ?>">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <a href="<?= base_url('StudentStrength/delete/' . $row['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('हटवायचे?')">
+                                <a href="<?= base_url('StudentStrength/delete/' . $row['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </td>
@@ -129,7 +129,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">बंद करा</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
                 <button type="submit" class="btn btn-primary px-4">जतन करा</button>
             </div>
         </form>
@@ -172,7 +172,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-warning w-100">अपडेट करा</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
+                <button type="submit" class="btn btn-warning">अपडेट करा</button>  
             </div>
         </form>
     </div>

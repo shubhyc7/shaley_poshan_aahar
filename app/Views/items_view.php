@@ -102,7 +102,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">बंद करा</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
                 <button type="submit" class="btn btn-primary">जतन करा</button>
             </div>
         </form>
