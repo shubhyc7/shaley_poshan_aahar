@@ -175,40 +175,48 @@
         });
     });
 
-    $('.marathi_convert').on('keydown', function(e) {
-        if (e.keyCode === 32) { // Space bar
+    $('.marathi_convert').on('keyup', function(e) {
+        // Check for Space bar: e.key works on most modern mobile browsers
+        // e.which === 32 is a fallback for older browsers
+        if (e.key === " " || e.keyCode === 32 || e.which === 32) {
+
             let $this = $(this);
             let content = $this.val();
             let cursorPosition = this.selectionStart;
 
-            // Get text before cursor
-            let textBeforeCursor = content.substring(0, cursorPosition);
+            // Get text before cursor (the word just typed + the space)
+            let textBeforeCursor = content.substring(0, cursorPosition).trim();
             let words = textBeforeCursor.split(/\s+/);
             let lastWord = words[words.length - 1];
 
             if (lastWord.length > 0) {
-                e.preventDefault(); // Stop space from jumping ahead before translation
+                // Check if it's already Marathi (to avoid re-translating)
+                // This regex detects English characters
+                if (/[a-zA-Z]/.test(lastWord)) {
 
-                $.get('https://inputtools.google.com/request', {
-                    text: lastWord,
-                    itc: 'mr-t-i0-und',
-                    num: 1
-                }, function(response) {
-                    if (response[0] === 'SUCCESS') {
-                        let marathiWord = response[1][0][1][0];
-                        let textAfterCursor = content.substring(cursorPosition);
+                    $.get('https://inputtools.google.com/request', {
+                        text: lastWord,
+                        itc: 'mr-t-i0-und',
+                        num: 1
+                    }, function(response) {
+                        if (response[0] === 'SUCCESS') {
+                            let marathiWord = response[1][0][1][0];
+                            let textAfterCursor = content.substring(cursorPosition);
 
-                        // Reconstruct the string: TextBeforeLastWord + MarathiWord + Space + TextAfter
-                        let prefix = textBeforeCursor.substring(0, textBeforeCursor.lastIndexOf(lastWord));
-                        let newValue = prefix + marathiWord + " " + textAfterCursor;
+                            // Find where the last English word started
+                            let lastWordStart = textBeforeCursor.lastIndexOf(lastWord);
+                            let prefix = textBeforeCursor.substring(0, lastWordStart);
 
-                        $this.val(newValue);
+                            // Construct new value
+                            let newValue = prefix + marathiWord + " " + textAfterCursor;
+                            $this.val(newValue);
 
-                        // Move cursor to correct position after the new space
-                        let newCursorPos = prefix.length + marathiWord.length + 1;
-                        $this[0].setSelectionRange(newCursorPos, newCursorPos);
-                    }
-                });
+                            // Reset cursor position
+                            let newCursorPos = prefix.length + marathiWord.length + 1;
+                            $this[0].setSelectionRange(newCursorPos, newCursorPos);
+                        }
+                    });
+                }
             }
         }
     });
