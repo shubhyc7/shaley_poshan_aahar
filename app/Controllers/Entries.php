@@ -369,7 +369,7 @@ class Entries extends BaseController
             $sheet->getColumnDimension($this->getColumnLetter($i))->setAutoSize(true);
         }
 
-        $filename = 'दैनंदिन_बहु-वस्तू_नोंद_' . $month . '_' . $year . '.xlsx';
+        $filename = 'दैनंदिन_पोषण_आहार_नोंद_' . $month . '_' . $year . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');

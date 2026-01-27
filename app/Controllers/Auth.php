@@ -9,7 +9,8 @@ class Auth extends BaseController
 
     public function index()
     {
-        
+        // echo password_hash("admin123", PASSWORD_DEFAULT);
+        // die();
         if (session()->get('isLoggedIn')) return redirect()->to('/entries');
         return view('login');
     }

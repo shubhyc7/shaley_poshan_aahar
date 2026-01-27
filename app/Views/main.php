@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaley Poshan Aahar System</title>
+    <!-- <title>Shaley Poshan Aahar System</title> -->
     <link rel="apple-touch-icon" sizes="180x180" href="<?= base_url('favicon_io/apple-touch-icon.png') ?>">
     <link rel="apple-touch-icon" sizes="180x180" href="<?= base_url('favicon_io/apple-touch-icon.png') ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('favicon_io/favicon-32x32.png') ?>">
@@ -80,7 +80,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
         <div class="container">
             <a class="navbar-brand" href="<?= base_url() ?>">
-                <i class="fas fa-utensils me-2"></i> POSHAN AAHAR
+                <i class="fas fa-utensils me-2"></i> शालेय पोषण आहार प्रणाली
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -138,7 +138,7 @@
     </div>
 
     <footer class="text-center py-4 bg-white border-top mt-auto">
-        <p class="text-muted mb-0">&copy; <?= date('Y') ?> शालेय पोषण आहार व्यवस्थापन प्रणाली</p>
+        <p class="text-muted mb-0">&copy; <?= date('Y') ?> शालेय पोषण आहार प्रणाली</p>
     </footer>
 
     <script src="<?php echo base_url('js/bootstrap.bundle.min.js'); ?>"></script>

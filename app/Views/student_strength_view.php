@@ -1,5 +1,6 @@
 <?= $this->extend('main') ?>
 <?= $this->section('content') ?>
+<title>शालेय पोषण आहार प्रणाली | विद्यार्थी संख्या यादी</title>
 
 <div class="card shadow-sm border-0 mb-4">
 

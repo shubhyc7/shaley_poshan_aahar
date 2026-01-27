@@ -1,5 +1,6 @@
 <?= $this->extend('main') ?>
 <?= $this->section('content') ?>
+<title>शालेय पोषण आहार प्रणाली | स्टॉक नोंद</title>
 
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">

@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>Login - Poshan Aahar</title>
+    <!-- <title>Login - Poshan Aahar</title> -->
+    <title>लॉगिन - शालेय पोषण आहार प्रणाली</title>
     <link rel="apple-touch-icon" sizes="180x180" href="<?= base_url('favicon_io/apple-touch-icon.png') ?>">
     <link rel="apple-touch-icon" sizes="180x180" href="<?= base_url('favicon_io/apple-touch-icon.png') ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('favicon_io/favicon-32x32.png') ?>">
@@ -28,7 +29,7 @@
 <body>
     <div class="card login-card shadow border-0">
         <div class="text-center mb-4">
-            <h4 class="text-primary fw-bold">शालेय पोषण आहार</h4>
+            <h4 class="text-primary fw-bold">शालेय पोषण आहार प्रणाली</h4>
             <p class="text-muted small">कृपया आपले खाते लॉग-इन करा</p>
         </div>
 

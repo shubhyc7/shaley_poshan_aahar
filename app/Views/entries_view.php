@@ -1,9 +1,10 @@
 <?= $this->extend('main') ?>
 <?= $this->section('content') ?>
+<title>शालेय पोषण आहार प्रणाली | दैनंदिन पोषण आहार नोंद</title>
 
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 text-primary fw-bold">दैनंदिन बहु-वस्तू नोंद</h5>
+        <h5 class="mb-0 text-primary fw-bold">दैनंदिन पोषण आहार नोंद</h5>
     </div>
     <div class="card shadow-sm border-0 mb-4">
         <div class="card shadow-sm border-0 mb-4">
@@ -117,7 +118,7 @@
                                         <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>">0.000</div>
                                     </td>
                                 <?php endforeach; ?>
-                                <td class="text-center"><button type="submit" class="btn btn-success btn-sm w-100">Save</button></td>
+                                <td class="text-center"><button type="submit" class="btn btn-success btn-sm w-100">जतन करा</button></td>
                             </tr>
 
                             <?php
