@@ -175,51 +175,48 @@
         });
     });
 
-    $('.marathi_convert').on('keyup', function(e) {
-        // Check for Space bar: e.key works on most modern mobile browsers
-        // e.which === 32 is a fallback for older browsers
-        if (e.key === " " || e.keyCode === 32 || e.which === 32) {
+    $('.marathi_convert').on('input', function(e) {
+    let $this = $(this);
+    let content = $this.val();
+    let cursorPosition = this.selectionStart;
 
-            let $this = $(this);
-            let content = $this.val();
-            let cursorPosition = this.selectionStart;
+    // Check if the character just entered was a space
+    // On mobile, the 'input' event is triggered AFTER the space is added to the value
+    let lastChar = content.substring(cursorPosition - 1, cursorPosition);
 
-            // Get text before cursor (the word just typed + the space)
-            let textBeforeCursor = content.substring(0, cursorPosition).trim();
-            let words = textBeforeCursor.split(/\s+/);
-            let lastWord = words[words.length - 1];
+    if (lastChar === " ") {
+        // Get text before the space
+        let textBeforeCursor = content.substring(0, cursorPosition).trim();
+        let words = textBeforeCursor.split(/\s+/);
+        let lastWord = words[words.length - 1];
 
-            if (lastWord.length > 0) {
-                // Check if it's already Marathi (to avoid re-translating)
-                // This regex detects English characters
-                if (/[a-zA-Z]/.test(lastWord)) {
+        // Only translate if the word contains English letters
+        if (lastWord.length > 0 && /[a-zA-Z]/.test(lastWord)) {
+            
+            $.get('https://inputtools.google.com/request', {
+                text: lastWord,
+                itc: 'mr-t-i0-und',
+                num: 1
+            }, function(response) {
+                if (response[0] === 'SUCCESS') {
+                    let marathiWord = response[1][0][1][0];
+                    let textAfterCursor = content.substring(cursorPosition);
 
-                    $.get('https://inputtools.google.com/request', {
-                        text: lastWord,
-                        itc: 'mr-t-i0-und',
-                        num: 1
-                    }, function(response) {
-                        if (response[0] === 'SUCCESS') {
-                            let marathiWord = response[1][0][1][0];
-                            let textAfterCursor = content.substring(cursorPosition);
+                    // Reconstruct the string
+                    let lastWordStart = textBeforeCursor.lastIndexOf(lastWord);
+                    let prefix = textBeforeCursor.substring(0, lastWordStart);
+                    
+                    let newValue = prefix + marathiWord + " " + textAfterCursor;
+                    $this.val(newValue);
 
-                            // Find where the last English word started
-                            let lastWordStart = textBeforeCursor.lastIndexOf(lastWord);
-                            let prefix = textBeforeCursor.substring(0, lastWordStart);
-
-                            // Construct new value
-                            let newValue = prefix + marathiWord + " " + textAfterCursor;
-                            $this.val(newValue);
-
-                            // Reset cursor position
-                            let newCursorPos = prefix.length + marathiWord.length + 1;
-                            $this[0].setSelectionRange(newCursorPos, newCursorPos);
-                        }
-                    });
+                    // Move cursor back to the correct spot
+                    let newCursorPos = prefix.length + marathiWord.length + 1;
+                    $this[0].setSelectionRange(newCursorPos, newCursorPos);
                 }
-            }
+            });
         }
-    });
+    }
+});
 </script>
 
 <?= $this->endSection() ?>
