@@ -9,3 +9,8 @@ Feature :
 Credential : 
 Username : admin
 Password  : admin123
+
+
+
+domain : shaleyposhanaahar.infinityfreeapp.com
+Account Password : KLh3qXoxbgjP

@@ -26,6 +26,7 @@ class App extends BaseConfig
     // app/Config/App.php
 
     public string $baseURL = 'http://localhost/shaley_poshan_aahar/public/';
+    // public string $baseURL = 'https://shaleyposhanaahar.infinityfreeapp.com/';
     public string $indexPage = '';
 
     /**
