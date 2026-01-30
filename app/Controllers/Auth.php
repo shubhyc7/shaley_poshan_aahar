@@ -2,11 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Models\UserModel; // You will need to create a simple UserModel
-
 class Auth extends BaseController
 {
-
     public function index()
     {
         // echo password_hash("admin123", PASSWORD_DEFAULT);
@@ -17,10 +14,15 @@ class Auth extends BaseController
 
     public function login()
     {
+        $username = trim($this->request->getPost('username') ?? '');
+        $password = $this->request->getPost('password') ?? '';
+
+        // Validation
+        if (empty($username) || empty($password)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया यूजरनेम आणि पासवर्ड प्रविष्ट करा!');
+        }
+
         $db = \Config\Database::connect();
-        $username = $this->request->getPost('username');
-        $password = $this->request->getPost('password');
-      
         $user = $db->table('users')->where('username', $username)->get()->getRowArray();
 
         if ($user && password_verify($password, $user['password'])) {
@@ -34,7 +36,7 @@ class Auth extends BaseController
             return redirect()->to('/entries');
         }
 
-        return redirect()->back()->with('error', 'चुकीचे यूजरनेम किंवा पासवर्ड!');
+        return redirect()->back()->withInput()->with('error', 'चुकीचे यूजरनेम किंवा पासवर्ड!');
     }
 
     public function logout()
