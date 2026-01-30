@@ -23,7 +23,7 @@
         <h5 class="mb-0 text-primary fw-bold">वापर दर (प्रति विद्यार्थी)</h5>
         <div class="d-flex flex-wrap gap-2">
             <a href="<?= base_url('ItemRates/export?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-success btn-sm">
-                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+                <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#rateModal">
                 <i class="fas fa-plus me-1"></i> नवीन दर सेट करा
@@ -83,8 +83,8 @@
                             <td><span class="badge bg-info text-dark">इयत्ता <?= esc($rate['category'] ?? '') ?></span></td>
                             <td><?= esc($rate['per_student_qty']) ?></td>
                             <td><strong><?= esc($rate['unit'] ?? '') ?></strong></td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= esc($rate['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
+                            <td class="btn-action-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= esc($rate['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
                                 <a href="<?= base_url('ItemRates/delete/' . $rate['id'] . '?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>

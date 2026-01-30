@@ -23,9 +23,9 @@
 
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">दैनंदिन पोषण आहार नोंद</h5>
-        <div>
+        <div class="d-flex flex-wrap gap-2">
             <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
-                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+                <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
         </div>
     </div>
@@ -164,7 +164,7 @@
                                     ?>
                                         <td class="text-center small"><?= $q > 0 ? number_format($q, 3) : '-' ?></td>
                                     <?php endforeach; ?>
-                                    <td class="text-center">
+                                    <td class="text-center btn-action-group">
                                         <a href="<?= base_url('entries/delete/' . $row['id'] . '?month=' . ($filterMonth ?? date('n')) . '&year=' . ($filterYear ?? date('Y'))) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ही नोंद हटवायची?')" title="हटवा"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>

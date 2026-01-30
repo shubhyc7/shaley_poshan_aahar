@@ -23,10 +23,10 @@
         <h5 class="mb-0 text-primary fw-bold">विद्यार्थी संख्या यादी</h5>
         <div class="d-flex flex-wrap gap-2">
             <a href="<?= base_url('StudentStrength/export?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-success btn-sm">
-                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+                <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-                <i class="fas fa-plus"></i> नवीन संख्या जोडा
+                <i class="fas fa-plus me-1"></i> नवीन संख्या जोडा
             </button>
         </div>
     </div>
@@ -76,13 +76,9 @@
                                 </span>
                             </td>
                             <td><strong><?= esc($row['total_students']) ?></strong></td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= esc($row['id']) ?>" title="संपादित करा">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <a href="<?= base_url('StudentStrength/delete/' . $row['id'] . '?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                            <td class="btn-action-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= esc($row['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
+                                <a href="<?= base_url('StudentStrength/delete/' . $row['id'] . '?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -114,7 +110,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
-                <button type="submit" class="btn btn-primary px-4">जतन करा</button>
+                <button type="submit" class="btn btn-primary">जतन करा</button>
             </div>
         </form>
     </div>

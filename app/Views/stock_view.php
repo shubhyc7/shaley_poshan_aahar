@@ -24,10 +24,10 @@
         <h5 class="mb-0 text-primary fw-bold">स्टॉक नोंद</h5>
         <div class="d-flex flex-wrap gap-2">
             <a href="<?= base_url("Stock/export?month=$month&year=$year" . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-success btn-sm">
-                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+                <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStockModal">
-                <i class="fas fa-plus"></i> नवीन स्टॉक नोंद
+                <i class="fas fa-plus me-1"></i> नवीन स्टॉक नोंद
             </button>
         </div>
     </div>
@@ -106,9 +106,9 @@
                                 <?= $row['transaction_type'] == 'OUT' ? '-' : '+' ?> <?= number_format($row['quantity'], 3) ?>
                             </td>
                             <td class="text-end fw-bold text-primary"><?= number_format($row['closing_bal'], 3) ?></td>
-                            <td class="text-center">
+                            <td class="text-center btn-action-group">
                                 <?php if ($row['transaction_type'] != 'OUT') : ?>
-                                    <button class="btn btn-sm btn-outline-primary edit-stock-btn" data-id="<?= esc($row['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary edit-stock-btn" data-id="<?= esc($row['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
                                     <a href="<?= base_url("Stock/delete/{$row['id']}?month=$month&year=$year" . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
                                 <?php else : ?>
                                     <i class="fas fa-lock text-muted" title="Entry Screen Linked"></i>

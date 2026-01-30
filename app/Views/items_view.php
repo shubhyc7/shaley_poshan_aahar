@@ -22,10 +22,10 @@
         <h5 class="mb-0 text-primary fw-bold">वस्तू यादी</h5>
         <div class="d-flex flex-wrap gap-2">
             <a href="<?= base_url('Items/export') ?>" class="btn btn-success btn-sm">
-                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+                <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                <i class="fas fa-plus"></i> नवीन वस्तू जोडा
+                <i class="fas fa-plus me-1"></i> नवीन वस्तू जोडा
             </button>
         </div>
     </div>
@@ -67,13 +67,9 @@
                                 </span>
                             </td>
                             <td><strong><?= esc($item['unit'] ?? '') ?></strong></td>
-                            <td>
-                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-id="<?= esc($item['id']) ?>" title="संपादित करा">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <a href="<?= base_url('items/delete/' . $item['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('ही वस्तू हटवायची?')" title="हटवा">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                            <td class="btn-action-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= esc($item['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
+                                <a href="<?= base_url('items/delete/' . $item['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ही वस्तू हटवायची?')" title="हटवा"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

@@ -39,6 +39,12 @@
             border-radius: 5px;
         }
 
+        /* Project-wide button/link consistency */
+        .card-header .btn-success.btn-sm { min-height: 44px; }
+        .card-header .btn-primary.btn-sm { min-height: 44px; }
+        .btn-action-group .btn { margin-right: 0.25rem; }
+        .btn-action-group .btn:last-child { margin-right: 0; }
+
         /* Responsive Header adjustment without changing HTML */
         @media (max-width: 768px) {
 
