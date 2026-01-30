@@ -3,9 +3,16 @@
 <title>शालेय पोषण आहार प्रणाली | दैनंदिन पोषण आहार नोंद</title>
 
 <div class="card shadow-sm border-0 mb-4">
+
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
         <h5 class="mb-0 text-primary fw-bold">दैनंदिन पोषण आहार नोंद</h5>
+        <div>
+            <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
+                <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
+            </a>
+        </div>
     </div>
+
     <div class="card shadow-sm border-0 mb-4">
         <div class="card shadow-sm border-0 mb-4">
 
@@ -25,14 +32,7 @@
                         <label class="form-label small fw-bold">वर्ष निवडा</label>
                         <input type="number" name="year" class="form-control form-control-sm" value="<?= $filterYear ?>" onchange="this.form.submit()">
                     </div>
-                    <!-- <div class="col-md-2">
-                        <button type="submit" class="btn btn-dark btn-sm w-100">फिल्टर</button>
-                    </div> -->
-                    <div class="col-md-7 text-end">
-                        <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
-                            <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
-                        </a>
-                    </div>
+
                 </form>
             </div>
         </div>
@@ -95,8 +95,8 @@
                                 <td><input type="date" name="entry_date" id="entry_date" class="form-control form-control-sm" value="<?= date('Y-m-d') ?>"></td>
                                 <td>
                                     <select name="category" id="category" class="form-select form-select-sm">
+                                        <option value="1-5">1-5</option>
                                         <option value="6-8">6-8</option>
-                                        <option value="9-10">9-10</option>
                                     </select>
                                     <input type="hidden" name="student_strength" id="student_strength_val">
                                 </td>

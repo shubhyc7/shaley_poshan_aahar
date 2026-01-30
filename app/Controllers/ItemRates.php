@@ -17,26 +17,23 @@ class ItemRates extends BaseController
         $itemModel = new ItemModel();
 
         // Get Filter Values (Default to current if not provided)
-        $filterMonth = $this->request->getGet('month') ?? date('n');
-        $filterYear  = $this->request->getGet('year') ?? date('Y');
+        $filterCategory = $this->request->getGet('category') ?? '';
+
         // Build the query
         $query = $rateModel->select('item_rates.*, items.item_name, items.unit,items.item_type')
             ->join('items', 'items.id = item_rates.item_id')
             ->where('item_rates.is_disable', 0);
 
-        if ($filterMonth) {
-            $query->where('item_rates.month', $filterMonth);
+        if ($filterCategory) {
+            $query->where('item_rates.category', $filterCategory);
         }
-        if ($filterYear) {
-            $query->where('item_rates.year', $filterYear);
-        }
+
 
         $data['rates'] = $query->findAll();
         $data['items'] = $itemModel->where('is_disable', 0)->findAll();
 
         // Pass filter values back to view to keep them selected
-        $data['filterMonth'] = $filterMonth;
-        $data['filterYear']  = $filterYear;
+        $data['filterCategory'] = $filterCategory;
 
         return view('item_rates_view', $data);
     }
@@ -48,32 +45,26 @@ class ItemRates extends BaseController
 
         $item_id  = $this->request->getPost('item_id');
         $category = $this->request->getPost('category');
-        $month    = $this->request->getPost('month');
-        $year     = $this->request->getPost('year');
 
         // DUPLICATE VALIDATION
         $existing = $model->where([
             'item_id'    => $item_id,
             'category'   => $category,
-            'month'      => $month,
-            'year'       => $year,
             'is_disable' => 0
         ])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "निवडलेल्या इयत्ता आणि महिन्यासाठी या वस्तूचा दर आधीच अस्तित्वात आहे!");
+            return redirect()->back()->withInput()->with('error', "निवडलेल्या इयत्ता साठी या वस्तूचा दर आधीच अस्तित्वात आहे!");
         }
 
         $model->save([
             'item_id'         => $item_id,
             'category'        => $category,
             'per_student_qty' => $this->request->getPost('per_student_qty'),
-            'month'           => $month,
-            'year'            => $year,
             'is_disable'      => 0
         ]);
 
-        return redirect()->to('/ItemRates')->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
+        return redirect()->to('/ItemRates?category=' . $category)->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
     }
 
     // edit
@@ -91,15 +82,11 @@ class ItemRates extends BaseController
 
         $item_id  = $this->request->getPost('item_id');
         $category = $this->request->getPost('category');
-        $month    = $this->request->getPost('month');
-        $year     = $this->request->getPost('year');
 
         // DUPLICATE VALIDATION (Exclude current ID)
         $existing = $model->where([
             'item_id'    => $item_id,
             'category'   => $category,
-            'month'      => $month,
-            'year'       => $year,
             'is_disable' => 0
         ])->where('id !=', $id)->first();
 
@@ -111,28 +98,31 @@ class ItemRates extends BaseController
             'item_id'         => $item_id,
             'category'        => $category,
             'per_student_qty' => $this->request->getPost('per_student_qty'),
-            'month'           => $month,
-            'year'            => $year,
         ]);
 
-        return redirect()->to('/ItemRates')->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
+        return redirect()->to('/ItemRates?category=' . $category)->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
     }
 
     // delete
     public function delete($id)
     {
+        $filterCategory = $this->request->getGet('category') ?? '';
+
         $model = new RateModel();
         // SOFT DELETE: Mark as disabled instead of removing
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/ItemRates')->with('status', 'दर यशस्वीरित्या हटवला!');
+        return redirect()->to('/ItemRates?category=' . $filterCategory)->with('status', 'दर यशस्वीरित्या हटवला!');
     }
 
     // export
     public function export()
     {
+        // Get Filter Values (Default to current if not provided)
+        $filterCategory = $this->request->getGet('category') ?? '';
+
         $rateModel = new RateModel();
-        $rates = $rateModel->getRatesWithItems();
+        $rates = $rateModel->getRatesWithItems($filterCategory);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -142,10 +132,8 @@ class ItemRates extends BaseController
         $sheet->setCellValue('B1', 'वस्तू');
         $sheet->setCellValue('C1', 'वस्तू प्रकार');
         $sheet->setCellValue('D1', 'इयत्ता');
-        $sheet->setCellValue('E1', 'महिना');
-        $sheet->setCellValue('F1', 'वर्ष');
-        $sheet->setCellValue('G1', 'प्रति विद्यार्थी प्रमाण');
-        $sheet->setCellValue('H1', 'एकक');
+        $sheet->setCellValue('E1', 'प्रति विद्यार्थी प्रमाण');
+        $sheet->setCellValue('F1', 'एकक');
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -155,7 +143,7 @@ class ItemRates extends BaseController
             ],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
         ];
-        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:F1')->applyFromArray($headerStyle);
 
         $row = 2;
         foreach ($rates as $rate) {
@@ -163,21 +151,19 @@ class ItemRates extends BaseController
             $sheet->setCellValue('B' . $row, $rate['item_name']);
             $sheet->setCellValue('C' . $row, $rate['item_type'] == 'MAIN' ? 'मुख्य' : 'सहाय्यक');
             $sheet->setCellValue('D' . $row, 'इयत्ता ' . $rate['category']);
-            $sheet->setCellValue('E' . $row, date("F", mktime(0, 0, 0, $rate['month'], 10)));
-            $sheet->setCellValue('F' . $row, $rate['year']);
-            $sheet->setCellValue('G' . $row, $rate['per_student_qty']);
-            $sheet->setCellValue('H' . $row, $rate['unit']);
+            $sheet->setCellValue('E' . $row, $rate['per_student_qty']);
+            $sheet->setCellValue('F' . $row, $rate['unit']);
             $row++;
         }
 
         // --- NEW CODE: SET DECIMAL FORMAT FOR COLUMN G ---
         // '0.000' ensures exactly 3 decimal places are shown (0.1 becomes 0.100)
-        $sheet->getStyle('G2:G' . ($row - 1))
+        $sheet->getStyle('E2:E' . ($row - 1))
             ->getNumberFormat()
-            ->setFormatCode('0.000');
+            ->setFormatCode('0.00000');
         // ------------------------------------------------
 
-        foreach (range('A', 'H') as $col) { // Fixed range to include H
+        foreach (range('A', 'F') as $col) { // Fixed range to include H
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

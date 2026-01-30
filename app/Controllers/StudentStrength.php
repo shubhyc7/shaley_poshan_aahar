@@ -16,27 +16,21 @@ class StudentStrength extends BaseController
         $model = new StudentStrengthModel();
 
         // Get Filter Values from GET request
-        $filterMonth = $this->request->getGet('month') ?? date('n');
-        $filterYear  = $this->request->getGet('year') ?? date('Y');
+        $filterCategory = $this->request->getGet('category') ?? '';
 
         // Start building the query
         $query = $model->where('is_disable', 0);
 
         // Apply filters if they are set
-        if ($filterMonth) {
-            $query->where('month', $filterMonth);
-        }
-        if ($filterYear) {
-            $query->where('year', $filterYear);
+        if ($filterCategory) {
+            $query->where('category', $filterCategory);
         }
 
-        $data['records'] = $query->orderBy('year', 'DESC')
-            ->orderBy('month', 'DESC')
+        $data['records'] = $query->orderBy('category', 'ASC')
             ->findAll();
 
         // Pass filters back to view to maintain selection
-        $data['filterMonth'] = $filterMonth;
-        $data['filterYear']  = $filterYear;
+        $data['filterCategory'] = $filterCategory;
 
         return view('student_strength_view', $data);
     }
@@ -47,30 +41,24 @@ class StudentStrength extends BaseController
         $model = new StudentStrengthModel();
 
         $category = $this->request->getPost('category');
-        $month    = $this->request->getPost('month');
-        $year     = $this->request->getPost('year');
 
         // DUPLICATE VALIDATION
         $existing = $model->where([
             'category'   => $category,
-            'month'      => $month,
-            'year'       => $year,
             'is_disable' => 0
         ])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "या महिना/वर्षासाठी $category चा विद्यार्थी संख्या आधीच अस्तित्वात आहे!");
+            return redirect()->back()->withInput()->with('error', "या $category चा विद्यार्थी संख्या आधीच अस्तित्वात आहे!");
         }
 
         $model->save([
             'category'       => $category,
             'total_students' => $this->request->getPost('total_students'),
-            'month'          => $month,
-            'year'           => $year,
             'is_disable'     => 0
         ]);
 
-        return redirect()->to('/StudentStrength')->with('status', 'विद्यार्थी संख्या यशस्वीरित्या जोडली गेली!');
+        return redirect()->to('/StudentStrength?category=' . $category)->with('status', 'विद्यार्थी संख्या यशस्वीरित्या जोडली गेली!');
     }
 
     // edit
@@ -87,14 +75,10 @@ class StudentStrength extends BaseController
         $model = new StudentStrengthModel();
 
         $category = $this->request->getPost('category');
-        $month    = $this->request->getPost('month');
-        $year     = $this->request->getPost('year');
 
         // DUPLICATE VALIDATION (Exclude current ID)
         $existing = $model->where([
             'category'   => $category,
-            'month'      => $month,
-            'year'       => $year,
             'is_disable' => 0
         ])->where('id !=', $id)->first();
 
@@ -105,39 +89,49 @@ class StudentStrength extends BaseController
         $model->update($id, [
             'category'       => $category,
             'total_students' => $this->request->getPost('total_students'),
-            'month'          => $month,
-            'year'           => $year,
         ]);
 
-        return redirect()->to('/StudentStrength')->with('status', 'विद्यार्थी संख्या यशस्वीरित्या अद्यतनित केली!');
+        return redirect()->to('/StudentStrength?category=' . $category)->with('status', 'विद्यार्थी संख्या यशस्वीरित्या अद्यतनित केली!');
     }
 
     // SOFT DELETE Logic
     public function delete($id)
     {
+        $filterCategory = $this->request->getGet('category') ?? '';
+
         $model = new StudentStrengthModel();
 
         // Instead of true delete, we update is_disable to 1
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/StudentStrength')->with('status', 'विद्यार्थी संख्या यशस्वीरित्या हटवली!');
+        return redirect()->to('/StudentStrength?category=' . $filterCategory)->with('status', 'विद्यार्थी संख्या यशस्वीरित्या हटवली!');
     }
 
     // export
     public function export()
     {
+        $filterCategory = $this->request->getGet('category') ?? '';
+
+
         $model = new StudentStrengthModel();
         // Export only active records
-        $records = $model->getActive()->orderBy('year', 'DESC')->orderBy('month', 'DESC')->findAll();
+        // १. आधी क्विरी बिल्डर तयार करा (findAll() नका वापरू)
+        $query = $model->getActive()->orderBy('category', 'ASC');
+
+        // २. जर फिल्टर असेल, तर तो क्विरीमध्ये ॲड करा
+        if ($filterCategory) {
+            $query->where('category', $filterCategory);
+        }
+
+        // ३. शेवटी रिझल्ट्स मिळवण्यासाठी findAll() वापरा
+        $records = $query->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'क्रमांक');
         $sheet->setCellValue('B1', 'इयत्ता');
-        $sheet->setCellValue('C1', 'महिना');
-        $sheet->setCellValue('D1', 'वर्ष');
-        $sheet->setCellValue('E1', 'एकूण विद्यार्थी');
+        $sheet->setCellValue('C1', 'एकूण विद्यार्थी');
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -147,19 +141,17 @@ class StudentStrength extends BaseController
             ],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
         ];
-        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:C1')->applyFromArray($headerStyle);
 
         $row = 2;
         foreach ($records as $record) {
             $sheet->setCellValue('A' . $row, $record['id']);
             $sheet->setCellValue('B' . $row, 'इयत्ता ' . $record['category']);
-            $sheet->setCellValue('C' . $row, date("F", mktime(0, 0, 0, $record['month'], 10)));
-            $sheet->setCellValue('D' . $row, $record['year']);
-            $sheet->setCellValue('E' . $row, $record['total_students']);
+            $sheet->setCellValue('C' . $row, $record['total_students']);
             $row++;
         }
 
-        foreach (range('A', 'E') as $col) {
+        foreach (range('A', 'C') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

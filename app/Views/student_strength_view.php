@@ -9,7 +9,7 @@
 
         <h5 class="mb-0 text-primary fw-bold">विद्यार्थी संख्या यादी</h5>
         <div>
-            <a href="<?= base_url('StudentStrength/export') ?>" class="btn btn-success me-2">
+            <a href="<?= base_url('StudentStrength/export?category=' . $filterCategory) ?>" class="btn btn-success me-2">
                 <i class="fas fa-file-excel"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
@@ -34,21 +34,13 @@
 
         <form method="GET" action="<?= base_url('StudentStrength') ?>" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label fw-bold">महिना निवडा</label>
-                <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="">सर्व महिने</option>
-                    <?php for ($m = 1; $m <= 12; $m++) : ?>
-                        <option value="<?= $m ?>" <?= ($filterMonth == $m) ? 'selected' : '' ?>>
-                            <?= date("F", mktime(0, 0, 0, $m, 10)) ?>
-                        </option>
-                    <?php endfor; ?>
+                <label class="form-label fw-bold">इयत्ता निवडा</label>
+                <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">सर्व</option>
+                    <option value="1-5" <?= $filterCategory == '1-5' ? 'selected' : '' ?>>1-5</option>
+                    <option value="6-8" <?= $filterCategory == '6-8' ? 'selected' : '' ?>>6-8</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold">वर्ष निवडा</label>
-                <input type="number" name="year" class="form-control form-control-sm" value="<?= $filterYear ?>" placeholder="उदा. 2024" onchange="this.form.submit()">
-            </div>
-
         </form>
 
 
@@ -59,7 +51,6 @@
                     <tr>
                         <th>क्रमांक</th>
                         <th>इयत्ता</th>
-                        <th>महिना / वर्ष</th>
                         <th>एकूण विद्यार्थी</th>
                         <th>क्रिया</th>
                     </tr>
@@ -73,13 +64,12 @@
                                     इयत्ता <?= $row['category'] ?>
                                 </span>
                             </td>
-                            <td><?= date("F", mktime(0, 0, 0, $row['month'], 10)) ?> - <?= $row['year'] ?></td>
                             <td><strong><?= $row['total_students'] ?></strong></td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= $row['id'] ?>">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <a href="<?= base_url('StudentStrength/delete/' . $row['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')">
+                                <a href="<?= base_url('StudentStrength/delete/' . $row['id'] . '?category=' . $filterCategory) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </td>
@@ -103,30 +93,15 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">इयत्ता निवडा</label>
                     <select name="category" class="form-select" required>
-                        <option value="6-8">इयत्ता 6 ते 8</option>
-                        <option value="9-10">इयत्ता 9 ते 10</option>
+                        <option value="1-5">1-5</option>
+                        <option value="6-8">6-8</option>
                     </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">एकूण विद्यार्थी</label>
                     <input type="number" name="total_students" class="form-control" placeholder="विद्यार्थ्यांची संख्या प्रविष्ट करा" required>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">महिना</label>
-                        <select name="month" class="form-select" required>
-                            <?php for ($m = 1; $m <= 12; $m++) : ?>
-                                <option value="<?= $m ?>" <?= $m == date('n') ? 'selected' : '' ?>>
-                                    <?= date("F", mktime(0, 0, 0, $m, 10)) ?>
-                                </option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">वर्ष</label>
-                        <input type="number" name="year" class="form-control" value="<?= date('Y') ?>" required>
-                    </div>
-                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
@@ -148,32 +123,18 @@
                 <div class="mb-3">
                     <label class="fw-bold">इयत्ता</label>
                     <select name="category" id="edit_category" class="form-select" required>
-                        <option value="6-8">इयत्ता 6 ते 8</option>
-                        <option value="9-10">इयत्ता 9 ते 10</option>
+                        <option value="1-5">1-5</option>
+                        <option value="6-8">6-8</option>
                     </select>
                 </div>
                 <div class="mb-3">
                     <label class="fw-bold">एकूण विद्यार्थी</label>
                     <input type="number" name="total_students" id="edit_total" class="form-control" required>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="fw-bold">महिना</label>
-                        <select name="month" id="edit_month" class="form-select" required>
-                            <?php for ($m = 1; $m <= 12; $m++) : ?>
-                                <option value="<?= $m ?>"><?= date("F", mktime(0, 0, 0, $m, 10)) ?></option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="fw-bold">वर्ष</label>
-                        <input type="number" name="year" id="edit_year" class="form-control" required>
-                    </div>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
-                <button type="submit" class="btn btn-warning">अपडेट करा</button>  
+                <button type="submit" class="btn btn-warning">अपडेट करा</button>
             </div>
         </form>
     </div>
@@ -196,9 +157,6 @@
                     // Fill modal fields
                     $('#edit_category').val(data.category);
                     $('#edit_total').val(data.total_students);
-                    $('#edit_month').val(data.month);
-                    $('#edit_year').val(data.year);
-
                     // Show modal
                     $('#editModal').modal('show');
                 }

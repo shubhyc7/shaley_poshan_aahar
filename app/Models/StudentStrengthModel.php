@@ -8,7 +8,7 @@ class StudentStrengthModel extends Model
 {
     protected $table      = 'student_strength';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['category', 'total_students', 'month', 'year', 'is_disable'];
+    protected $allowedFields = ['category', 'total_students', 'is_disable'];
 
     // Enable automatic timestamps
     protected $useTimestamps = true;
