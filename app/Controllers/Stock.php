@@ -15,9 +15,11 @@ class Stock extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // Get inputs
-        $month = $this->request->getGet('month') ?? date('n');
-        $year  = $this->request->getGet('year') ?? date('Y');
+        // Get inputs (validate month 1-12, year 2020-2030)
+        $month = (int)($this->request->getGet('month') ?? date('n'));
+        $year  = (int)($this->request->getGet('year') ?? date('Y'));
+        $month = ($month < 1 || $month > 12) ? (int)date('n') : $month;
+        $year  = ($year < 2020 || $year > 2030) ? (int)date('Y') : $year;
         $itemId = $this->request->getGet('item_id');
 
         // Fetch items
@@ -95,24 +97,37 @@ class Stock extends BaseController
         $itemId = $this->request->getPost('item_id');
         $type   = $this->request->getPost('transaction_type');
         $id     = $this->request->getPost('id');
-        $date   = $this->request->getPost('transaction_date');
+        $date   = trim($this->request->getPost('transaction_date') ?? '');
+        $quantity = (float)($this->request->getPost('quantity') ?? 0);
 
-        // Capture filters from hidden fields to preserve state after save
-        $f_month = $this->request->getPost('filter_month');
-        $f_year  = $this->request->getPost('filter_year');
-        $f_item  = $this->request->getPost('filter_item_id');
+        $f_month = $this->request->getPost('filter_month') ?? date('n');
+        $f_year  = $this->request->getPost('filter_year') ?? date('Y');
+        $f_item  = $this->request->getPost('filter_item_id') ?? '';
+
+        // Validation
+        if (empty($date)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया तारीख निवडा!');
+        }
+        if (empty($itemId)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वस्तू निवडा!');
+        }
+        if ($quantity <= 0) {
+            return redirect()->back()->withInput()->with('error', 'परिमाण ० पेक्षा जास्त असणे आवश्यक आहे!');
+        }
 
         if ($type === 'OPENING') {
-            $check = $db->table('stock_transactions')->where(['item_id' => $itemId, 'transaction_type' => 'OPENING', 'is_disable' => 0]);
-            if ($id) $check->where('id !=', $id);
-            if ($check->countAllResults() > 0) return redirect()->back()->with('error', 'ओपनिंग स्टॉक आधीच आहे.');
+            $builder = $db->table('stock_transactions')->where(['item_id' => $itemId, 'transaction_type' => 'OPENING', 'is_disable' => 0]);
+            if ($id) $builder->where('id !=', $id);
+            if ($builder->countAllResults() > 0) {
+                return redirect()->back()->withInput()->with('error', 'ओपनिंग स्टॉक आधीच आहे.');
+            }
         }
 
         $saveData = [
             'item_id'          => $itemId,
             'transaction_type' => $type,
             'transaction_date' => $date,
-            'quantity'         => $this->request->getPost('quantity'),
+            'quantity'         => $quantity,
             'remarks'          => $this->request->getPost('remarks'),
             'is_disable'       => 0
         ];
@@ -123,7 +138,9 @@ class Stock extends BaseController
             $db->table('stock_transactions')->insert($saveData);
         }
 
-        return redirect()->to(base_url("Stock?month=$f_month&year=$f_year&item_id=$f_item"))->with('status', 'स्टॉक नोंद यशस्वीरित्या जतन केले!');
+        $redirectUrl = "Stock?month=$f_month&year=$f_year";
+        if (!empty($f_item)) $redirectUrl .= "&item_id=$f_item";
+        return redirect()->to(base_url($redirectUrl))->with('status', 'स्टॉक नोंद यशस्वीरित्या जतन केले!');
     }
 
     public function delete($id)
@@ -136,9 +153,14 @@ class Stock extends BaseController
         $f_item  = $this->request->getGet('item_id');
 
         $row = $db->table('stock_transactions')->where('id', $id)->get()->getRow();
-        if ($row && $row->transaction_type != 'OUT') {
+        if (!$row) {
+            return redirect()->back()->with('error', 'नोंद सापडली नाही.');
+        }
+        if ($row->transaction_type != 'OUT') {
             $db->table('stock_transactions')->where('id', $id)->update(['is_disable' => 1]);
-            return redirect()->to(base_url("Stock?month=$f_month&year=$f_year&item_id=$f_item"))->with('status', 'स्टॉक नोंद यशस्वीरित्या हटवली!');
+            $redirectUrl = "Stock?month=$f_month&year=$f_year";
+            if (!empty($f_item)) $redirectUrl .= "&item_id=$f_item";
+            return redirect()->to(base_url($redirectUrl))->with('status', 'स्टॉक नोंद यशस्वीरित्या हटवली!');
         }
         return redirect()->back()->with('error', 'खर्च (OUT) नोंद हटवता येत नाही.');
     }
