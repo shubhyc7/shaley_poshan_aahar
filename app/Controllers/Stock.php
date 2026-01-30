@@ -69,6 +69,9 @@ class Stock extends BaseController
 
         foreach ($transactions as &$tr) {
             $id = $tr['item_id'];
+            if (!isset($currentRunning[$id])) {
+                $currentRunning[$id] = 0;
+            }
             $tr['opening_bal'] = $currentRunning[$id];
 
             $type = strtoupper($tr['transaction_type']);
