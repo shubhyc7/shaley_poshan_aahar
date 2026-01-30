@@ -23,7 +23,20 @@ class Items extends BaseController
     public function store()
     {
         $model = new ItemModel();
-        $itemName = trim($this->request->getPost('item_name'));
+        $itemName = trim($this->request->getPost('item_name') ?? '');
+        $itemType = $this->request->getPost('item_type');
+        $unit = $this->request->getPost('unit');
+
+        // Validation
+        if (empty($itemName)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वस्तूचे नाव प्रविष्ट करा!');
+        }
+        if (!in_array($itemType, ['MAIN', 'SUPPORT'])) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वैध वस्तू प्रकार निवडा!');
+        }
+        if (empty($unit)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया एकक निवडा!');
+        }
 
         // DUPLICATE VALIDATION
         $existing = $model->where([
@@ -36,9 +49,9 @@ class Items extends BaseController
         }
 
         $model->save([
-            'item_name' => $itemName,
-            'item_type' => $this->request->getPost('item_type'),
-            'unit'      => $this->request->getPost('unit'),
+            'item_name'  => $itemName,
+            'item_type'  => $itemType,
+            'unit'       => $unit,
             'is_disable' => 0
         ]);
 
@@ -50,6 +63,9 @@ class Items extends BaseController
     {
         $model = new ItemModel();
         $data = $model->find($id);
+        if (!$data) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Record not found']);
+        }
         return $this->response->setJSON($data);
     }
 
@@ -57,7 +73,20 @@ class Items extends BaseController
     public function update($id)
     {
         $model = new ItemModel();
-        $itemName = trim($this->request->getPost('item_name'));
+        $itemName = trim($this->request->getPost('item_name') ?? '');
+        $itemType = $this->request->getPost('item_type');
+        $unit = $this->request->getPost('unit');
+
+        // Validation
+        if (empty($itemName)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वस्तूचे नाव प्रविष्ट करा!');
+        }
+        if (!in_array($itemType, ['MAIN', 'SUPPORT'])) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वैध वस्तू प्रकार निवडा!');
+        }
+        if (empty($unit)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया एकक निवडा!');
+        }
 
         // DUPLICATE VALIDATION (Exclude current record)
         $existing = $model->where([
@@ -66,13 +95,13 @@ class Items extends BaseController
         ])->where('id !=', $id)->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', "या नावाने असलेली दुसरी सक्रिय वस्तू '$itemName' आधीच अस्तित्वात आहे!");
+            return redirect()->back()->withInput()->with('error', "या नावाने असलेली दुसरी सक्रिय वस्तू '$itemName' आधीच अस्तित्वात आहे!");
         }
 
         $model->update($id, [
             'item_name' => $itemName,
-            'item_type' => $this->request->getPost('item_type'),
-            'unit'      => $this->request->getPost('unit'),
+            'item_type' => $itemType,
+            'unit'      => $unit,
         ]);
 
         return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या अद्यतनित झाली!');
@@ -82,10 +111,11 @@ class Items extends BaseController
     public function delete($id)
     {
         $model = new ItemModel();
-
-        // Update is_disable instead of deleting the row
+        $item = $model->find($id);
+        if (!$item) {
+            return redirect()->back()->with('error', 'वस्तू सापडली नाही.');
+        }
         $model->update($id, ['is_disable' => 1]);
-
         return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या हटवली!');
     }
 
