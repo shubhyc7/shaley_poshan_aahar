@@ -15,21 +15,15 @@ class StudentStrength extends BaseController
     {
         $model = new StudentStrengthModel();
 
-        // Get Filter Values from GET request
         $filterCategory = $this->request->getGet('category') ?? '';
 
-        // Start building the query
         $query = $model->where('is_disable', 0);
 
-        // Apply filters if they are set
         if ($filterCategory) {
             $query->where('category', $filterCategory);
         }
 
-        $data['records'] = $query->orderBy('category', 'ASC')
-            ->findAll();
-
-        // Pass filters back to view to maintain selection
+        $data['records'] = $query->orderBy('category', 'ASC')->findAll();
         $data['filterCategory'] = $filterCategory;
 
         return view('student_strength_view', $data);
@@ -40,25 +34,30 @@ class StudentStrength extends BaseController
     {
         $model = new StudentStrengthModel();
 
-        $category = $this->request->getPost('category');
+        $category = trim($this->request->getPost('category') ?? '');
+        $totalStudents = (int)($this->request->getPost('total_students') ?? 0);
 
-        // DUPLICATE VALIDATION
-        $existing = $model->where([
-            'category'   => $category,
-            'is_disable' => 0
-        ])->first();
+        // Validation
+        if (empty($category)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया इयत्ता निवडा!');
+        }
+        if ($totalStudents <= 0) {
+            return redirect()->back()->withInput()->with('error', 'विद्यार्थी संख्या ० पेक्षा जास्त असणे आवश्यक आहे!');
+        }
+
+        $existing = $model->where(['category' => $category, 'is_disable' => 0])->first();
 
         if ($existing) {
-            return redirect()->back()->withInput()->with('error', "या $category चा विद्यार्थी संख्या आधीच अस्तित्वात आहे!");
+            return redirect()->back()->withInput()->with('error', "इयत्ता $category साठी विद्यार्थी संख्या आधीच अस्तित्वात आहे!");
         }
 
         $model->save([
             'category'       => $category,
-            'total_students' => $this->request->getPost('total_students'),
+            'total_students' => $totalStudents,
             'is_disable'     => 0
         ]);
 
-        return redirect()->to('/StudentStrength?category=' . $category)->with('status', 'विद्यार्थी संख्या यशस्वीरित्या जोडली गेली!');
+        return redirect()->to('/StudentStrength?category=' . urlencode($category))->with('status', 'विद्यार्थी संख्या यशस्वीरित्या जोडली गेली!');
     }
 
     // edit
@@ -74,24 +73,25 @@ class StudentStrength extends BaseController
     {
         $model = new StudentStrengthModel();
 
-        $category = $this->request->getPost('category');
+        $category = trim($this->request->getPost('category') ?? '');
+        $totalStudents = (int)($this->request->getPost('total_students') ?? 0);
 
-        // DUPLICATE VALIDATION (Exclude current ID)
-        $existing = $model->where([
-            'category'   => $category,
-            'is_disable' => 0
-        ])->where('id !=', $id)->first();
+        if ($totalStudents <= 0) {
+            return redirect()->back()->withInput()->with('error', 'विद्यार्थी संख्या ० पेक्षा जास्त असणे आवश्यक आहे!');
+        }
+
+        $existing = $model->where(['category' => $category, 'is_disable' => 0])->where('id !=', $id)->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', "या महिना/वर्षात $category साठी आधीच एक दुसरा रेकॉर्ड अस्तित्वात आहे!");
+            return redirect()->back()->withInput()->with('error', "इयत्ता $category साठी आधीच एक दुसरा रेकॉर्ड अस्तित्वात आहे!");
         }
 
         $model->update($id, [
             'category'       => $category,
-            'total_students' => $this->request->getPost('total_students'),
+            'total_students' => $totalStudents
         ]);
 
-        return redirect()->to('/StudentStrength?category=' . $category)->with('status', 'विद्यार्थी संख्या यशस्वीरित्या अद्यतनित केली!');
+        return redirect()->to('/StudentStrength?category=' . urlencode($category))->with('status', 'विद्यार्थी संख्या यशस्वीरित्या अद्यतनित केली!');
     }
 
     // SOFT DELETE Logic
@@ -100,11 +100,9 @@ class StudentStrength extends BaseController
         $filterCategory = $this->request->getGet('category') ?? '';
 
         $model = new StudentStrengthModel();
-
-        // Instead of true delete, we update is_disable to 1
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/StudentStrength?category=' . $filterCategory)->with('status', 'विद्यार्थी संख्या यशस्वीरित्या हटवली!');
+        return redirect()->to('/StudentStrength?category=' . urlencode($filterCategory))->with('status', 'विद्यार्थी संख्या यशस्वीरित्या हटवली!');
     }
 
     // export
@@ -112,18 +110,12 @@ class StudentStrength extends BaseController
     {
         $filterCategory = $this->request->getGet('category') ?? '';
 
-
         $model = new StudentStrengthModel();
-        // Export only active records
-        // १. आधी क्विरी बिल्डर तयार करा (findAll() नका वापरू)
         $query = $model->getActive()->orderBy('category', 'ASC');
 
-        // २. जर फिल्टर असेल, तर तो क्विरीमध्ये ॲड करा
         if ($filterCategory) {
             $query->where('category', $filterCategory);
         }
-
-        // ३. शेवटी रिझल्ट्स मिळवण्यासाठी findAll() वापरा
         $records = $query->findAll();
 
         $spreadsheet = new Spreadsheet();

@@ -166,13 +166,13 @@ class Entries extends BaseController
     // getStrengthAjax
     public function getStrengthAjax()
     {
-        $date = $this->request->getPost('date');
         $category = $this->request->getPost('category');
-        $month = date('n', strtotime($date));
-        $year = date('Y', strtotime($date));
+        if (empty($category)) {
+            return $this->response->setJSON(['total' => 0]);
+        }
 
         $model = new StudentStrengthModel();
-        $strength = $model->where(['month' => $month, 'year' => $year, 'category' => $category, 'is_disable' => '0'])->first();
+        $strength = $model->where(['category' => $category, 'is_disable' => 0])->first();
 
         return $this->response->setJSON(['total' => $strength['total_students'] ?? 0]);
     }
