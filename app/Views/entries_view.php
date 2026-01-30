@@ -2,9 +2,26 @@
 <?= $this->section('content') ?>
 <title>शालेय पोषण आहार प्रणाली | दैनंदिन पोषण आहार नोंद</title>
 
-<div class="card shadow-sm border-0 mb-4">
+<style>
+/* Entries - Mobile Responsive */
+.entries-card .card-header.d-flex { flex-wrap: wrap; gap: 0.5rem; }
+.entries-card .card-header .btn { min-height: 44px; }
+@media (max-width: 768px) {
+    .entries-card .card-header.d-flex { flex-direction: column; align-items: stretch; }
+    .entries-card .card-header .btn { width: 100%; }
+    .entries-card .filter-form .col-md-2, .entries-card .filter-form .col-md-3 { max-width: 100%; }
+}
+@media (max-width: 576px) {
+    .entries-card .table th, .entries-card .table td { padding: 0.5rem; font-size: 0.8rem; }
+    .entries-card .btn-sm { min-width: 44px; min-height: 44px; padding: 0.5rem; }
+    .entries-card .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .entries-card .table input.form-control, .entries-card .table select.form-select { font-size: 0.8rem; min-height: 38px; }
+}
+</style>
 
-    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+<div class="card shadow-sm border-0 mb-4 entries-card">
+
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">दैनंदिन पोषण आहार नोंद</h5>
         <div>
             <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
@@ -17,8 +34,8 @@
         <div class="card shadow-sm border-0 mb-4">
 
             <div class="card-header bg-white py-3">
-                <form method="GET" action="<?= base_url('Entries') ?>" class="row g-2 align-items-end">
-                    <div class="col-md-3">
+                <form method="GET" action="<?= base_url('Entries') ?>" class="row g-2 align-items-end filter-form">
+                    <div class="col-6 col-md-3">
                         <label class="form-label small fw-bold">महिना निवडा</label>
                         <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
                             <?php for ($m = 1; $m <= 12; $m++) : ?>
@@ -28,9 +45,9 @@
                             <?php endfor; ?>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label small fw-bold">वर्ष निवडा</label>
-                        <input type="number" name="year" class="form-control form-control-sm" value="<?= $filterYear ?>" onchange="this.form.submit()">
+                        <input type="number" name="year" class="form-control form-control-sm" value="<?= $filterYear ?>" min="2020" max="2030" onchange="this.form.submit()">
                     </div>
 
                 </form>
@@ -41,18 +58,20 @@
 
             <?php if (session()->getFlashdata('status')) : ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <?= session()->getFlashdata('status') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <i class="fas fa-check-circle me-2"></i><?= esc(session()->getFlashdata('status')) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php endif; ?>
 
             <?php if (session()->getFlashdata('error')) : ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <?= session()->getFlashdata('error') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <i class="fas fa-exclamation-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php endif; ?>
             <form action="<?= base_url('entries/store') ?>" method="POST" id="entryForm">
+                <input type="hidden" name="filter_month" value="<?= $filterMonth ?? date('n') ?>">
+                <input type="hidden" name="filter_year" value="<?= $filterYear ?? date('Y') ?>">
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle mb-0">
                         <thead class="table-dark text-center">
@@ -63,10 +82,10 @@
                                 <th style="width: 70px;">एकूण</th>
                                 <th style="width: 70px;">उपस्थित</th>
                                 <?php foreach ($main_items as $mi) : ?>
-                                    <th class="bg-primary small"><?= $mi['item_name'] ?></th>
+                                    <th class="bg-primary small"><?= esc($mi['item_name']) ?></th>
                                 <?php endforeach; ?>
                                 <?php foreach ($support_items as $si) : ?>
-                                    <th class="bg-secondary small"><?= $si['item_name'] ?></th>
+                                    <th class="bg-secondary small"><?= esc($si['item_name']) ?></th>
                                 <?php endforeach; ?>
                                 <th>क्रिया</th>
                             </tr>
@@ -92,21 +111,21 @@
 
                             <tr class="table-info">
                                 <td>#</td>
-                                <td><input type="date" name="entry_date" id="entry_date" class="form-control form-control-sm" value="<?= date('Y-m-d') ?>"></td>
+                                <td><input type="date" name="entry_date" id="entry_date" class="form-control form-control-sm" value="<?= esc(old('entry_date', date('Y-m-d'))) ?>"></td>
                                 <td>
                                     <select name="category" id="category" class="form-select form-select-sm">
-                                        <option value="1-5">1-5</option>
-                                        <option value="6-8">6-8</option>
+                                        <option value="1-5" <?= old('category') == '1-5' ? 'selected' : '' ?>>1-5</option>
+                                        <option value="6-8" <?= old('category') == '6-8' ? 'selected' : '' ?>>6-8</option>
                                     </select>
                                     <input type="hidden" name="student_strength" id="student_strength_val">
                                 </td>
                                 <td><small id="max_strength">0</small></td>
-                                <td><input type="number" name="present_students" id="present_students" class="form-control form-control-sm"></td>
+                                <td><input type="number" name="present_students" id="present_students" class="form-control form-control-sm" min="1" placeholder="0" value="<?= esc(old('present_students')) ?>"></td>
 
                                 <?php foreach ($main_items as $mi) : ?>
                                     <td class="text-center">
                                         <input type="checkbox" name="main_item_id[]" value="<?= $mi['id'] ?>" class="main-item-chk">
-                                        <input type="hidden" name="main_item_qty[]" id="qty_<?= $mi['id'] ?>" value="0">
+                                        <input type="hidden" name="main_item_qty[<?= $mi['id'] ?>]" id="qty_<?= $mi['id'] ?>" value="0">
                                         <div class="small fw-bold text-primary display-qty" id="display_<?= $mi['id'] ?>">0.000</div>
                                     </td>
                                 <?php endforeach; ?>
@@ -114,7 +133,7 @@
                                 <?php foreach ($support_items as $si) : ?>
                                     <td class="text-center">
                                         <input type="hidden" name="support_item_id[]" value="<?= $si['id'] ?>">
-                                        <input type="hidden" name="support_qty[]" id="qty_<?= $si['id'] ?>" value="0">
+                                        <input type="hidden" name="support_qty[<?= $si['id'] ?>]" id="qty_<?= $si['id'] ?>" value="0">
                                         <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>">0.000</div>
                                     </td>
                                 <?php endforeach; ?>
@@ -136,7 +155,7 @@
                                 <tr class="bg-white">
                                     <td class="text-center small"><?= $sr++ ?></td>
                                     <td class="small"><?= date('d-m-Y', strtotime($row['entry_date'])) ?></td>
-                                    <td class="text-center small"><?= $row['category'] ?></td>
+                                    <td class="text-center small"><?= esc($row['category']) ?></td>
                                     <td class="text-center small"><?= $row['total_students'] ?></td>
                                     <td class="text-center small text-success fw-bold"><?= $row['present_students'] ?></td>
                                     <?php foreach (array_merge($main_items, $support_items) as $it) :
@@ -146,7 +165,7 @@
                                         <td class="text-center small"><?= $q > 0 ? number_format($q, 3) : '-' ?></td>
                                     <?php endforeach; ?>
                                     <td class="text-center">
-                                        <a href="<?= base_url('entries/delete/' . $row['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></a>
+                                        <a href="<?= base_url('entries/delete/' . $row['id'] . '?month=' . ($filterMonth ?? date('n')) . '&year=' . ($filterYear ?? date('Y'))) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ही नोंद हटवायची?')" title="हटवा"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

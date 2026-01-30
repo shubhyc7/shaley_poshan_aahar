@@ -23,8 +23,10 @@ class Entries extends BaseController
         $DailyAaharEntriesModel = new DailyAaharEntriesModel();
         $db = \Config\Database::connect();
 
-        $filterMonth = $this->request->getGet('month') ?? date('n');
-        $filterYear  = $this->request->getGet('year') ?? date('Y');
+        $filterMonth = (int)($this->request->getGet('month') ?? date('n'));
+        $filterYear  = (int)($this->request->getGet('year') ?? date('Y'));
+        $filterMonth = ($filterMonth < 1 || $filterMonth > 12) ? (int)date('n') : $filterMonth;
+        $filterYear  = ($filterYear < 2020 || $filterYear > 2030) ? (int)date('Y') : $filterYear;
         $startDate   = "$filterYear-" . str_pad($filterMonth, 2, "0", STR_PAD_LEFT) . "-01";
 
         $data['main_items'] = $itemModel->where(['item_type' => 'MAIN', 'is_disable' => 0])->findAll();
@@ -75,8 +77,24 @@ class Entries extends BaseController
         $entryModel = new DailyAaharEntriesModel();
         $itemsModel = new DailyAaharEntriesItemsModel();
 
-        $date = $this->request->getPost('entry_date');
-        $category = $this->request->getPost('category');
+        $date = trim($this->request->getPost('entry_date') ?? '');
+        $category = trim($this->request->getPost('category') ?? '');
+        $totalStudents = (int)($this->request->getPost('student_strength') ?? 0);
+        $presentStudents = (int)($this->request->getPost('present_students') ?? 0);
+
+        // Validation
+        if (empty($date)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया तारीख निवडा!');
+        }
+        if (empty($category)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया इयत्ता निवडा!');
+        }
+        if ($presentStudents <= 0) {
+            return redirect()->back()->withInput()->with('error', 'उपस्थित विद्यार्थी संख्या ० पेक्षा जास्त असणे आवश्यक आहे!');
+        }
+        if ($totalStudents > 0 && $presentStudents > $totalStudents) {
+            return redirect()->back()->withInput()->with('error', 'उपस्थित विद्यार्थी संख्या एकूण संख्येपेक्षा जास्त असू शकत नाही!');
+        }
 
         // 1. Duplicate Validation
         $existing = $entryModel->where([
@@ -93,39 +111,35 @@ class Entries extends BaseController
         $mainData = [
             'category'         => $category,
             'entry_date'       => $date,
-            'total_students'   => $this->request->getPost('student_strength'),
-            'present_students' => $this->request->getPost('present_students'),
+            'total_students'   => $totalStudents,
+            'present_students' => $presentStudents,
             'is_disable'       => 0
         ];
 
         $entryModel->insert($mainData);
         $parentId = $entryModel->getInsertID();
 
-        // 3. Insert Main Items (Checked ones)
-        $main_item_ids = $this->request->getPost('main_item_id');
-        $main_qtys = $this->request->getPost('main_item_qty');
+        // 3. Insert Main Items (Checked ones) - use item_id as key for correct qty mapping
+        $main_item_ids = $this->request->getPost('main_item_id') ?: [];
+        $main_qtys = $this->request->getPost('main_item_qty') ?: [];
 
         $db = \Config\Database::connect();
 
         if ($main_item_ids) {
-            foreach ($main_item_ids as $idx => $mid) {
-                // Since checkboxes only send values for checked items, 
-                // we need to find the correct qty based on item ID index logic
-                // usually better to use item ID as key in HTML: main_item_qty[ID]
-                if ($main_qtys[$idx] > 0) {
+            foreach ($main_item_ids as $mid) {
+                $qty = isset($main_qtys[$mid]) ? (float)$main_qtys[$mid] : 0;
+                if ($qty > 0) {
                     $itemsModel->insert([
                         'daily_aahar_entries_id' => $parentId,
                         'item_id'                => $mid,
-                        'qty'                    => $main_qtys[$idx],
+                        'qty'                    => $qty,
                         'is_disable'             => 0
                     ]);
-
-                    // Inside Entries::store loop after inserting into daily_aahar_entries_items
                     $db->table('stock_transactions')->insert([
                         'item_id' => $mid,
                         'transaction_type' => 'OUT',
-                        'daily_aahar_entries_id' => $parentId, // ID from child table
-                        'quantity' => $main_qtys[$idx],
+                        'daily_aahar_entries_id' => $parentId,
+                        'quantity' => $qty,
                         'transaction_date' => $date,
                         'is_disable' => 0
                     ]);
@@ -133,26 +147,25 @@ class Entries extends BaseController
             }
         }
 
-        // 4. Insert Support Items
-        $support_ids = $this->request->getPost('support_item_id');
-        $support_qtys = $this->request->getPost('support_qty');
+        // 4. Insert Support Items - use item_id as key for correct qty mapping
+        $support_ids = $this->request->getPost('support_item_id') ?: [];
+        $support_qtys = $this->request->getPost('support_qty') ?: [];
 
         if ($support_ids) {
-            foreach ($support_ids as $idx => $sid) {
-                if ($support_qtys[$idx] > 0) {
+            foreach ($support_ids as $sid) {
+                $qty = isset($support_qtys[$sid]) ? (float)$support_qtys[$sid] : 0;
+                if ($qty > 0) {
                     $itemsModel->insert([
                         'daily_aahar_entries_id' => $parentId,
                         'item_id'                => $sid,
-                        'qty'                    => $support_qtys[$idx],
+                        'qty'                    => $qty,
                         'is_disable'             => 0
                     ]);
-
-                    // Inside Entries::store loop after inserting into daily_aahar_entries_items
                     $db->table('stock_transactions')->insert([
                         'item_id' => $sid,
                         'transaction_type' => 'OUT',
-                        'daily_aahar_entries_id' => $parentId, // ID from child table
-                        'quantity' => $support_qtys[$idx],
+                        'daily_aahar_entries_id' => $parentId,
+                        'quantity' => $qty,
                         'transaction_date' => $date,
                         'is_disable' => 0
                     ]);
@@ -160,7 +173,9 @@ class Entries extends BaseController
             }
         }
 
-        return redirect()->to('/entries')->with('status', 'नोंद यशस्वीरित्या जतन केली!');
+        $filterMonth = $this->request->getPost('filter_month') ?? $this->request->getGet('month') ?? date('n');
+        $filterYear = $this->request->getPost('filter_year') ?? $this->request->getGet('year') ?? date('Y');
+        return redirect()->to('/entries?month=' . $filterMonth . '&year=' . $filterYear)->with('status', 'नोंद यशस्वीरित्या जतन केली!');
     }
 
     // getStrengthAjax
@@ -184,11 +199,18 @@ class Entries extends BaseController
         $present = (int)$this->request->getPost('present');
         $category = $this->request->getPost('category');
 
+        if (empty($date) || empty($category) || $present <= 0) {
+            return $this->response->setJSON(['rates' => []]);
+        }
+        $ts = strtotime($date);
+        if ($ts === false) {
+            return $this->response->setJSON(['rates' => []]);
+        }
+
         $rateModel = new \App\Models\RateModel();
         $rates = $rateModel->where([
-            'month'    => date('n', strtotime($date)),
-            'year'     => date('Y', strtotime($date)),
-            'category' => $category
+            'category' => $category,
+            'is_disable' => 0
         ])->findAll();
 
         $all_calculated = [];
@@ -200,10 +222,13 @@ class Entries extends BaseController
         return $this->response->setJSON(['rates' => $all_calculated]);
     }
 
-    // delete_session
+    // delete
     public function delete($id)
     {
         $db = \Config\Database::connect();
+
+        $filterMonth = $this->request->getGet('month') ?? date('n');
+        $filterYear = $this->request->getGet('year') ?? date('Y');
 
         // 1. Soft delete the main parent entry
         $db->table('daily_aahar_entries')
@@ -221,7 +246,7 @@ class Entries extends BaseController
             ->where('daily_aahar_entries_id', $id)
             ->update(['is_disable' => 1]);
 
-        return redirect()->to('/entries')->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली!');
+        return redirect()->to('/entries?month=' . $filterMonth . '&year=' . $filterYear)->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली!');
     }
 
     // export
