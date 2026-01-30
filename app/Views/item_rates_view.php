@@ -123,7 +123,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">प्रति विद्यार्थी प्रमाण</label>
-                    <input type="number" step="0.00001" min="0.001" name="per_student_qty" class="form-control" value="<?= esc(old('per_student_qty')) ?>" required placeholder="0.000">
+                    <input type="number" step="0.00001" min="0.00001" name="per_student_qty" class="form-control" value="<?= esc(old('per_student_qty')) ?>" required placeholder="0.00000">
                 </div>
             </div>
             <div class="modal-footer">
@@ -159,7 +159,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">प्रति विद्यार्थी प्रमाण</label>
-                    <input type="number" step="0.00001" min="0.001" name="per_student_qty" id="edit_qty" class="form-control" required placeholder="0.000">
+                    <input type="number" step="0.00001" min="0.00001" name="per_student_qty" id="edit_qty" class="form-control" required placeholder="0.00000">
                 </div>
             </div>
             <div class="modal-footer">

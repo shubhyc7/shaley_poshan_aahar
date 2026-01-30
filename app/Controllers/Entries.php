@@ -216,7 +216,7 @@ class Entries extends BaseController
         $all_calculated = [];
         foreach ($rates as $rate) {
             // Calculate the theoretical amount for every item
-            $all_calculated[$rate['item_id']] = number_format($present * $rate['per_student_qty'], 3, '.', '');
+            $all_calculated[$rate['item_id']] = number_format($present * $rate['per_student_qty'], 5, '.', '');
         }
 
         return $this->response->setJSON(['rates' => $all_calculated]);
@@ -376,12 +376,11 @@ class Entries extends BaseController
             $col++;
         }
 
-        // --- NEW: APPLY THREE DECIMAL FORMATTING TO ALL NUMERIC ITEM COLUMNS ---
-        // Start from Column F (Index 6) to the last column, for all rows from 2 to footer
+        // --- APPLY FIVE DECIMAL FORMATTING TO ALL NUMERIC ITEM COLUMNS ---
         $firstItemColLetter = 'F';
         $sheet->getStyle("{$firstItemColLetter}2:{$lastCol}{$rowNum}")
             ->getNumberFormat()
-            ->setFormatCode('0.000');
+            ->setFormatCode('0.00000');
         // ----------------------------------------------------------------------
 
         $sheet->getStyle("A$rowNum:{$lastCol}$rowNum")->applyFromArray([

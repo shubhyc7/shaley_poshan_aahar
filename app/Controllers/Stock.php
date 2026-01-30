@@ -275,11 +275,9 @@ class Stock extends BaseController
             $row++;
         }
 
-        // --- APPLY THREE DECIMAL FORMATTING ---
-        // Column D: Opening, E: Qty, F: Closing
-        $sheet->getStyle("D4:F" . ($row - 1))->getNumberFormat()->setFormatCode('0.000');
-        // Add red color for negative numbers in column E
-        $sheet->getStyle("E4:E" . ($row - 1))->getNumberFormat()->setFormatCode('[Red]-0.000;0.000');
+        // --- APPLY FIVE DECIMAL FORMATTING ---
+        $sheet->getStyle("D4:F" . ($row - 1))->getNumberFormat()->setFormatCode('0.00000');
+        $sheet->getStyle("E4:E" . ($row - 1))->getNumberFormat()->setFormatCode('[Red]-0.00000;0.00000');
 
         // 6. Add Summary Footer
         $sheet->setCellValue('A' . $row, 'एकूण सारांश');
@@ -290,8 +288,8 @@ class Stock extends BaseController
         $sheet->setCellValue('F' . $row, ($totalMonthOpening + $tIn - $tOut));
 
         // Format footer numbers
-        $sheet->getStyle("D$row")->getNumberFormat()->setFormatCode('0.000');
-        $sheet->getStyle("F$row")->getNumberFormat()->setFormatCode('"Closing: "0.000'); // Prefix text within format
+        $sheet->getStyle("D$row")->getNumberFormat()->setFormatCode('0.00000');
+        $sheet->getStyle("F$row")->getNumberFormat()->setFormatCode('"Closing: "0.00000');
 
         // Styling
         $sheet->getStyle("A$row:G$row")->getFont()->setBold(true);
