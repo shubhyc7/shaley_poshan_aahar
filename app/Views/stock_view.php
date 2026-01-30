@@ -22,7 +22,7 @@
 <div class="card border-0 shadow-sm mb-4 stock-card">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">स्टॉक नोंद</h5>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="btn-header-group">
             <a href="<?= base_url("Stock/export?month=$month&year=$year" . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>

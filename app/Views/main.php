@@ -40,8 +40,9 @@
         }
 
         /* Project-wide button/link consistency */
-        .card-header .btn-success.btn-sm { min-height: 44px; }
-        .card-header .btn-primary.btn-sm { min-height: 44px; }
+        .card-header .btn-success.btn-sm,
+        .card-header .btn-primary.btn-sm { min-height: 44px; display: inline-flex; align-items: center; }
+        .card-header .btn-header-group { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; }
         .btn-action-group .btn { margin-right: 0.25rem; }
         .btn-action-group .btn:last-child { margin-right: 0; }
 
@@ -75,7 +76,9 @@
             .card-header.d-flex .btn {
                 margin-right: 0 !important;
                 width: 100%;
-                display: block;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
             }
         }
     </style>

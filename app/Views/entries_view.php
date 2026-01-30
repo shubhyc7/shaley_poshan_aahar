@@ -23,7 +23,7 @@
 
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">दैनंदिन पोषण आहार नोंद</h5>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="btn-header-group">
             <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
