@@ -44,7 +44,19 @@ class ItemRates extends BaseController
         $model = new RateModel();
 
         $item_id  = $this->request->getPost('item_id');
-        $category = $this->request->getPost('category');
+        $category = trim($this->request->getPost('category') ?? '');
+        $perStudentQty = (float)($this->request->getPost('per_student_qty') ?? 0);
+
+        // Validation
+        if (empty($category)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया इयत्ता निवडा!');
+        }
+        if (empty($item_id)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वस्तू निवडा!');
+        }
+        if ($perStudentQty <= 0) {
+            return redirect()->back()->withInput()->with('error', 'प्रति विद्यार्थी प्रमाण ० पेक्षा जास्त असणे आवश्यक आहे!');
+        }
 
         // DUPLICATE VALIDATION
         $existing = $model->where([
@@ -60,11 +72,11 @@ class ItemRates extends BaseController
         $model->save([
             'item_id'         => $item_id,
             'category'        => $category,
-            'per_student_qty' => $this->request->getPost('per_student_qty'),
+            'per_student_qty' => $perStudentQty,
             'is_disable'      => 0
         ]);
 
-        return redirect()->to('/ItemRates?category=' . $category)->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
+        return redirect()->to('/ItemRates?category=' . urlencode($category))->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
     }
 
     // edit
@@ -72,6 +84,9 @@ class ItemRates extends BaseController
     {
         $model = new RateModel();
         $data = $model->find($id);
+        if (!$data) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Record not found']);
+        }
         return $this->response->setJSON($data);
     }
 
@@ -81,9 +96,20 @@ class ItemRates extends BaseController
         $model = new RateModel();
 
         $item_id  = $this->request->getPost('item_id');
-        $category = $this->request->getPost('category');
+        $category = trim($this->request->getPost('category') ?? '');
+        $perStudentQty = (float)($this->request->getPost('per_student_qty') ?? 0);
 
-        // DUPLICATE VALIDATION (Exclude current ID)
+        // Validation
+        if (empty($category)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया इयत्ता निवडा!');
+        }
+        if (empty($item_id)) {
+            return redirect()->back()->withInput()->with('error', 'कृपया वस्तू निवडा!');
+        }
+        if ($perStudentQty <= 0) {
+            return redirect()->back()->withInput()->with('error', 'प्रति विद्यार्थी प्रमाण ० पेक्षा जास्त असणे आवश्यक आहे!');
+        }
+
         $existing = $model->where([
             'item_id'    => $item_id,
             'category'   => $category,
@@ -91,16 +117,16 @@ class ItemRates extends BaseController
         ])->where('id !=', $id)->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', "या सेटिंग्जसह आधीच एक रेकॉर्ड अस्तित्वात आहे!");
+            return redirect()->back()->withInput()->with('error', "या सेटिंग्जसह आधीच एक रेकॉर्ड अस्तित्वात आहे!");
         }
 
         $model->update($id, [
             'item_id'         => $item_id,
             'category'        => $category,
-            'per_student_qty' => $this->request->getPost('per_student_qty'),
+            'per_student_qty' => $perStudentQty,
         ]);
 
-        return redirect()->to('/ItemRates?category=' . $category)->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
+        return redirect()->to('/ItemRates?category=' . urlencode($category))->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
     }
 
     // delete
@@ -112,7 +138,7 @@ class ItemRates extends BaseController
         // SOFT DELETE: Mark as disabled instead of removing
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/ItemRates?category=' . $filterCategory)->with('status', 'दर यशस्वीरित्या हटवला!');
+        return redirect()->to('/ItemRates?category=' . urlencode($filterCategory))->with('status', 'दर यशस्वीरित्या हटवला!');
     }
 
     // export
