@@ -39,6 +39,9 @@
             border-radius: 5px;
         }
 
+        /* Project-wide alert messages - margin only */
+        .alert-wrapper { margin: 0.5rem; }
+
         /* Project-wide button/link consistency */
         .card-header .btn-success.btn-sm,
         .card-header .btn-primary.btn-sm { min-height: 44px; display: inline-flex; align-items: center; }

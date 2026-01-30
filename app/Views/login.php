@@ -76,6 +76,8 @@
             font-size: 2.5rem;
         }
 
+        .alert-wrapper { margin: 0.5rem; }
+
         /* Mobile-first responsive adjustments */
         @media (max-width: 576px) {
             body {
@@ -118,10 +120,12 @@
             </div>
 
             <?php if (session()->getFlashdata('error')) : ?>
-                <div class="alert alert-danger alert-dismissible fade show small d-flex align-items-center" role="alert">
-                    <i class="fas fa-exclamation-circle me-2 flex-shrink-0"></i>
-                    <span class="flex-grow-1"><?= esc(session()->getFlashdata('error')) ?></span>
-                    <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="alert-wrapper">
+                    <div class="alert alert-danger alert-dismissible fade show small d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-circle me-2 flex-shrink-0"></i>
+                        <span class="flex-grow-1"><?= esc(session()->getFlashdata('error')) ?></span>
+                        <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 </div>
             <?php endif; ?>
 

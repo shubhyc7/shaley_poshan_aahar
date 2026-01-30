@@ -55,20 +55,25 @@
         </div>
 
         <div class="card-body p-0">
+            <div class="px-3 pt-3">
+                <?php if (session()->getFlashdata('status')) : ?>
+                    <div class="alert-wrapper">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i><?= esc(session()->getFlashdata('status')) ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
-            <?php if (session()->getFlashdata('status')) : ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i><?= esc(session()->getFlashdata('status')) ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php endif; ?>
-
-            <?php if (session()->getFlashdata('error')) : ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php endif; ?>
+                <?php if (session()->getFlashdata('error')) : ?>
+                    <div class="alert-wrapper">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
             <form action="<?= base_url('entries/store') ?>" method="POST" id="entryForm">
                 <input type="hidden" name="filter_month" value="<?= $filterMonth ?? date('n') ?>">
                 <input type="hidden" name="filter_year" value="<?= $filterYear ?? date('Y') ?>">
