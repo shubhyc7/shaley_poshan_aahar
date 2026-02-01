@@ -14,8 +14,13 @@ class Items extends BaseController
     public function index()
     {
         $model = new ItemModel();
-        // Only show active items
-        $data['items'] = $model->getActive()->findAll();
+        $filterItemType = trim($this->request->getGet('item_type') ?? '');
+        $query = $model->getActive();
+        if (!empty($filterItemType) && in_array($filterItemType, ['MAIN', 'SUPPORT'])) {
+            $query->where('item_type', $filterItemType);
+        }
+        $data['items'] = $query->findAll();
+        $data['filterItemType'] = $filterItemType;
         return view('items_view', $data);
     }
 
@@ -55,7 +60,10 @@ class Items extends BaseController
             'is_disable' => 0
         ]);
 
-        return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या जोडली गेली!');
+        $filterItemType = $this->request->getPost('filter_item_type') ?? $this->request->getGet('item_type') ?? '';
+        $redirectUrl = '/items';
+        if (!empty($filterItemType)) $redirectUrl .= '?item_type=' . urlencode($filterItemType);
+        return redirect()->to($redirectUrl)->with('status', 'वस्तू यशस्वीरित्या जोडली गेली!');
     }
 
     // edit
@@ -104,7 +112,10 @@ class Items extends BaseController
             'unit'      => $unit,
         ]);
 
-        return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या अद्यतनित झाली!');
+        $filterItemType = $this->request->getPost('filter_item_type') ?? $this->request->getGet('item_type') ?? '';
+        $redirectUrl = '/items';
+        if (!empty($filterItemType)) $redirectUrl .= '?item_type=' . urlencode($filterItemType);
+        return redirect()->to($redirectUrl)->with('status', 'वस्तू यशस्वीरित्या अद्यतनित झाली!');
     }
 
     // SOFT DELETE Logic
@@ -116,15 +127,22 @@ class Items extends BaseController
             return redirect()->back()->with('error', 'वस्तू सापडली नाही.');
         }
         $model->update($id, ['is_disable' => 1]);
-        return redirect()->to('/items')->with('status', 'वस्तू यशस्वीरित्या हटवली!');
+        $filterItemType = $this->request->getGet('item_type') ?? '';
+        $redirectUrl = '/items';
+        if (!empty($filterItemType)) $redirectUrl .= '?item_type=' . urlencode($filterItemType);
+        return redirect()->to($redirectUrl)->with('status', 'वस्तू यशस्वीरित्या हटवली!');
     }
 
     // export
     public function export()
     {
         $model = new ItemModel();
-        // Export only active items
-        $items = $model->getActive()->findAll();
+        $filterItemType = trim($this->request->getGet('item_type') ?? '');
+        $query = $model->getActive();
+        if (!empty($filterItemType) && in_array($filterItemType, ['MAIN', 'SUPPORT'])) {
+            $query->where('item_type', $filterItemType);
+        }
+        $items = $query->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
