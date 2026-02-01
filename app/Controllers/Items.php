@@ -30,7 +30,7 @@ class Items extends BaseController
         $model = new ItemModel();
         $itemName = trim($this->request->getPost('item_name') ?? '');
         $itemType = $this->request->getPost('item_type');
-        $unit = $this->request->getPost('unit');
+        $unit = 'किलोग्रॅम'; // Only kilogram unit in project
 
         // Validation
         if (empty($itemName)) {
@@ -38,9 +38,6 @@ class Items extends BaseController
         }
         if (!in_array($itemType, ['MAIN', 'SUPPORT'])) {
             return redirect()->back()->withInput()->with('error', 'कृपया वैध वस्तू प्रकार निवडा!');
-        }
-        if (empty($unit)) {
-            return redirect()->back()->withInput()->with('error', 'कृपया एकक निवडा!');
         }
 
         // DUPLICATE VALIDATION
@@ -83,7 +80,7 @@ class Items extends BaseController
         $model = new ItemModel();
         $itemName = trim($this->request->getPost('item_name') ?? '');
         $itemType = $this->request->getPost('item_type');
-        $unit = $this->request->getPost('unit');
+        $unit = 'किलोग्रॅम'; // Only kilogram unit in project
 
         // Validation
         if (empty($itemName)) {
@@ -91,9 +88,6 @@ class Items extends BaseController
         }
         if (!in_array($itemType, ['MAIN', 'SUPPORT'])) {
             return redirect()->back()->withInput()->with('error', 'कृपया वैध वस्तू प्रकार निवडा!');
-        }
-        if (empty($unit)) {
-            return redirect()->back()->withInput()->with('error', 'कृपया एकक निवडा!');
         }
 
         // DUPLICATE VALIDATION (Exclude current record)

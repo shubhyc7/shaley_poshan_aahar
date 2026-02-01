@@ -114,14 +114,7 @@
                         <option value="SUPPORT" <?= old('item_type') == 'SUPPORT' ? 'selected' : '' ?>>सहाय्यक (मसाले/तेल/मीठ)</option>
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">एकक</label>
-                    <select name="unit" class="form-select" required>
-                        <option value="ग्रॅम" <?= old('unit') == 'ग्रॅम' ? 'selected' : '' ?>>ग्रॅम</option>
-                        <option value="किलो" <?= old('unit') == 'किलो' ? 'selected' : '' ?>>किलो</option>
-                        <option value="लिटर" <?= old('unit') == 'लिटर' ? 'selected' : '' ?>>लिटर</option>
-                    </select>
-                </div>
+                <input type="hidden" name="unit" value="किलोग्रॅम">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
@@ -151,14 +144,7 @@
                         <option value="SUPPORT">सहाय्यक (मसाले/तेल/मीठ)</option>
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">एकक</label>
-                    <select name="unit" id="edit_unit" class="form-select" required>
-                        <option value="ग्रॅम">ग्रॅम</option>
-                        <option value="किलो">किलो</option>
-                        <option value="लिटर">लिटर</option>
-                    </select>
-                </div>
+                <input type="hidden" name="unit" value="किलोग्रॅम">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">रद्द करा</button>
@@ -187,7 +173,6 @@
                 $('#editItemForm').attr('action', '<?= base_url('Items/update/') ?>/' + id);
                 $('#edit_item_name').val(data.item_name);
                 $('#edit_item_type').val(data.item_type);
-                $('#edit_unit').val(data.unit);
                 $('#editItemModal').modal('show');
             })
             .fail(function() {
