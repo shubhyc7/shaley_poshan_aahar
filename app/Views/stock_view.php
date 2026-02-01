@@ -108,7 +108,7 @@
                     ?>
                         <tr class="small">
                             <td class="text-center"><?= date('d-m-Y', strtotime($row['transaction_date'])) ?></td>
-                            <td class="text-center"><span class="badge <?= ($row['category'] ?? '') == '6-8' ? 'bg-info' : 'bg-primary' ?>"><?= esc($row['category'] ?? '') ?></span></td>
+                            <td class="text-center"><span class="badge <?= ($row['category'] ?? '') == '6-8' ? 'bg-info' : 'bg-primary' ?>">इयत्ता <?= esc($row['category'] ?? '') ?></span></td>
                             <td><strong><?= esc($row['item_name']) ?></strong> <small class="text-muted">(<?= esc($row['unit']) ?>)</small></td>
                             <td class="text-center">
                                     <span class="badge <?= $row['transaction_type'] == 'OUT' ? 'bg-danger' : ($row['transaction_type'] == 'OPENING' ? 'bg-info' : 'bg-success') ?>">

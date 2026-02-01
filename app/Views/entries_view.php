@@ -162,7 +162,9 @@
                                 <tr class="bg-white">
                                     <td class="text-center small"><?= $sr++ ?></td>
                                     <td class="small"><?= date('d-m-Y', strtotime($row['entry_date'])) ?></td>
-                                    <td class="text-center small"><?= esc($row['category']) ?></td>
+                                    <td class="text-center small">
+                                        <span class="badge <?= ($row['category'] ?? '') == '6-8' ? 'bg-info' : 'bg-primary' ?>">इयत्ता <?= esc($row['category'] ?? '') ?></span>
+                                    </td>
                                     <td class="text-center small"><?= $row['total_students'] ?></td>
                                     <td class="text-center small text-success fw-bold"><?= $row['present_students'] ?></td>
                                     <?php foreach (array_merge($main_items, $support_items) as $it) :

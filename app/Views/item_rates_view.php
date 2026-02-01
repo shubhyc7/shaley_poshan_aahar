@@ -84,7 +84,7 @@
                                     <?= ($rate['item_type'] ?? '') == 'MAIN' ? 'मुख्य' : 'सहाय्यक'; ?>
                                 </span>
                             </td>
-                            <td><span class="badge bg-info text-dark">इयत्ता <?= esc($rate['category'] ?? '') ?></span></td>
+                            <td><span class="badge <?= ($rate['category'] ?? '') == '6-8' ? 'bg-info' : 'bg-primary' ?>">इयत्ता <?= esc($rate['category'] ?? '') ?></span></td>
                             <td><?= esc($rate['per_student_qty']) ?></td>
                             <td><strong><?= esc($rate['unit'] ?? '') ?></strong></td>
                             <td class="btn-action-group">
