@@ -17,23 +17,27 @@ class ItemRates extends BaseController
         $itemModel = new ItemModel();
 
         // Get Filter Values (Default to current if not provided)
-        $filterCategory = $this->request->getGet('category') ?? '';
+        $filterCategory = trim($this->request->getGet('category') ?? '');
+        $filterItemType = trim($this->request->getGet('item_type') ?? '');
 
         // Build the query
-        $query = $rateModel->select('item_rates.*, items.item_name, items.unit,items.item_type')
+        $query = $rateModel->select('item_rates.*, items.item_name, items.unit, items.item_type')
             ->join('items', 'items.id = item_rates.item_id')
             ->where('item_rates.is_disable', 0);
 
         if ($filterCategory) {
             $query->where('item_rates.category', $filterCategory);
         }
-
+        if ($filterItemType && in_array($filterItemType, ['MAIN', 'SUPPORT'])) {
+            $query->where('items.item_type', $filterItemType);
+        }
 
         $data['rates'] = $query->findAll();
         $data['items'] = $itemModel->where('is_disable', 0)->findAll();
 
         // Pass filter values back to view to keep them selected
         $data['filterCategory'] = $filterCategory;
+        $data['filterItemType'] = $filterItemType;
 
         return view('item_rates_view', $data);
     }
@@ -76,7 +80,10 @@ class ItemRates extends BaseController
             'is_disable'      => 0
         ]);
 
-        return redirect()->to('/ItemRates?category=' . urlencode($category))->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
+        $filterItemType = $this->request->getPost('filter_item_type') ?? $this->request->getGet('item_type') ?? '';
+        $redirectUrl = '/ItemRates?category=' . urlencode($category);
+        if (!empty($filterItemType)) $redirectUrl .= '&item_type=' . urlencode($filterItemType);
+        return redirect()->to($redirectUrl)->with('status', 'वापर दर यशस्वीरित्या जतन केला!');
     }
 
     // edit
@@ -126,29 +133,36 @@ class ItemRates extends BaseController
             'per_student_qty' => $perStudentQty,
         ]);
 
-        return redirect()->to('/ItemRates?category=' . urlencode($category))->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
+        $filterItemType = $this->request->getPost('filter_item_type') ?? $this->request->getGet('item_type') ?? '';
+        $redirectUrl = '/ItemRates?category=' . urlencode($category);
+        if (!empty($filterItemType)) $redirectUrl .= '&item_type=' . urlencode($filterItemType);
+        return redirect()->to($redirectUrl)->with('status', 'दर यशस्वीरित्या अद्यतनित केला!');
     }
 
     // delete
     public function delete($id)
     {
         $filterCategory = $this->request->getGet('category') ?? '';
+        $filterItemType = $this->request->getGet('item_type') ?? '';
 
         $model = new RateModel();
         // SOFT DELETE: Mark as disabled instead of removing
         $model->update($id, ['is_disable' => 1]);
 
-        return redirect()->to('/ItemRates?category=' . urlencode($filterCategory))->with('status', 'दर यशस्वीरित्या हटवला!');
+        $redirectUrl = '/ItemRates?category=' . urlencode($filterCategory);
+        if (!empty($filterItemType)) $redirectUrl .= '&item_type=' . urlencode($filterItemType);
+        return redirect()->to($redirectUrl)->with('status', 'दर यशस्वीरित्या हटवला!');
     }
 
     // export
     public function export()
     {
         // Get Filter Values (Default to current if not provided)
-        $filterCategory = $this->request->getGet('category') ?? '';
+        $filterCategory = trim($this->request->getGet('category') ?? '');
+        $filterItemType = trim($this->request->getGet('item_type') ?? '');
 
         $rateModel = new RateModel();
-        $rates = $rateModel->getRatesWithItems($filterCategory);
+        $rates = $rateModel->getRatesWithItems($filterCategory, $filterItemType);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

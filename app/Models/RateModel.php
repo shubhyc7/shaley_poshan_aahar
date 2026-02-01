@@ -14,19 +14,19 @@ class RateModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
 
-    public function getRatesWithItems($filterCategory = NULL)
+    public function getRatesWithItems($filterCategory = null, $filterItemType = null)
     {
-        // 1. Start the query builder and store it in a variable
         $builder = $this->select('item_rates.*, items.item_name, items.unit, items.item_type')
             ->join('items', 'items.id = item_rates.item_id')
             ->where('item_rates.is_disable', 0);
 
-        // 2. Conditionally add the category filter
-        if (isset($filterCategory) && !empty($filterCategory)) {
+        if (!empty($filterCategory)) {
             $builder->where('item_rates.category', $filterCategory);
         }
+        if (!empty($filterItemType) && in_array($filterItemType, ['MAIN', 'SUPPORT'])) {
+            $builder->where('items.item_type', $filterItemType);
+        }
 
-        // 3. Finalize and return results
         return $builder->findAll();
     }
 }

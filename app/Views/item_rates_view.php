@@ -22,7 +22,7 @@
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">वापर दर (प्रति विद्यार्थी)</h5>
         <div class="btn-header-group">
-            <a href="<?= base_url('ItemRates/export?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-success btn-sm">
+            <a href="<?= base_url('ItemRates/export?category=' . urlencode($filterCategory ?? '') . (!empty($filterItemType) ? '&item_type=' . urlencode($filterItemType) : '')) ?>" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#rateModal">
@@ -51,12 +51,20 @@
         <?php endif; ?>
 
         <form method="GET" action="<?= base_url('ItemRates') ?>" class="row g-3 align-items-end filter-form">
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-bold">इयत्ता निवडा</label>
                 <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">सर्व</option>
                     <option value="1-5" <?= ($filterCategory ?? '') == '1-5' ? 'selected' : '' ?>>1-5</option>
                     <option value="6-8" <?= ($filterCategory ?? '') == '6-8' ? 'selected' : '' ?>>6-8</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label fw-bold">वस्तूचा प्रकार निवडा</label>
+                <select name="item_type" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">सर्व प्रकार</option>
+                    <option value="MAIN" <?= ($filterItemType ?? '') == 'MAIN' ? 'selected' : '' ?>>मुख्य (प्राथमिक धान्य)</option>
+                    <option value="SUPPORT" <?= ($filterItemType ?? '') == 'SUPPORT' ? 'selected' : '' ?>>सहाय्यक (मसाले/तेल/मीठ)</option>
                 </select>
             </div>
         </form>
@@ -89,7 +97,7 @@
                             <td><strong><?= esc($rate['unit'] ?? '') ?></strong></td>
                             <td class="btn-action-group">
                                 <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-id="<?= esc($rate['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
-                                <a href="<?= base_url('ItemRates/delete/' . $rate['id'] . '?category=' . urlencode($filterCategory ?? '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
+                                <a href="<?= base_url('ItemRates/delete/' . $rate['id'] . '?category=' . urlencode($filterCategory ?? '') . (!empty($filterItemType) ? '&item_type=' . urlencode($filterItemType) : '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -105,6 +113,7 @@
 <div class="modal fade" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <form action="<?= base_url('ItemRates/store') ?>" method="POST" class="modal-content">
+            <input type="hidden" name="filter_item_type" value="<?= esc($filterItemType ?? '') ?>">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="rateModalLabel">वापर दर सेट करा</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -141,6 +150,7 @@
 <div class="modal fade" id="editRateModal" tabindex="-1" aria-labelledby="editRateModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <form id="editRateForm" method="POST" class="modal-content">
+            <input type="hidden" name="filter_item_type" value="<?= esc($filterItemType ?? '') ?>">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title" id="editRateModalLabel">वापर दर संपादित करा</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
