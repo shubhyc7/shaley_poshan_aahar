@@ -131,6 +131,7 @@
                                     <td class="text-center">
                                         <input type="checkbox" name="main_item_id[]" value="<?= $mi['id'] ?>" class="main-item-chk">
                                         <input type="hidden" name="main_item_qty[<?= $mi['id'] ?>]" id="qty_<?= $mi['id'] ?>" value="0">
+                                        <input type="hidden" name="main_item_rates[<?= $mi['id'] ?>]" id="rate_<?= $mi['id'] ?>" value="">
                                         <div class="small fw-bold text-primary display-qty" id="display_<?= $mi['id'] ?>">0.00000</div>
                                     </td>
                                 <?php endforeach; ?>
@@ -139,6 +140,7 @@
                                     <td class="text-center">
                                         <input type="hidden" name="support_item_id[]" value="<?= $si['id'] ?>">
                                         <input type="hidden" name="support_qty[<?= $si['id'] ?>]" id="qty_<?= $si['id'] ?>" value="0">
+                                        <input type="hidden" name="support_item_rates[<?= $si['id'] ?>]" id="rate_<?= $si['id'] ?>" value="">
                                         <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>">0.00000</div>
                                     </td>
                                 <?php endforeach; ?>
@@ -245,32 +247,39 @@
                             present
                         },
                         success: function(res) {
-                            const rates = res.all_rates || res.rates;
+                            const rates = res.all_rates || res.rates || {};
+                            const perStudentRates = res.per_student_rates || {};
 
                             // Calculate Main Items
                             $('.main-item-chk').each(function() {
                                 const id = $(this).val();
                                 if ($(this).is(':checked')) {
                                     const val = rates[id] || "0.00000";
+                                    const rateVal = perStudentRates[id] || "";
                                     $(`#display_${id}`).text(val);
                                     $(`#qty_${id}`).val(val);
+                                    $(`#rate_${id}`).val(rateVal);
                                 } else {
                                     $(`#display_${id}`).text('0.00000');
                                     $(`#qty_${id}`).val(0);
+                                    $(`#rate_${id}`).val('');
                                 }
                             });
 
                             // Calculate Support Items
                             <?php foreach ($support_items as $si) : ?>
                                 var sVal = (rates && rates[<?= $si['id'] ?>]) ? rates[<?= $si['id'] ?>] : "0.00000";
+                                var sRate = (perStudentRates && perStudentRates[<?= $si['id'] ?>]) ? perStudentRates[<?= $si['id'] ?>] : "";
                                 $('#display_<?= $si['id'] ?>').text(sVal);
                                 $('#qty_<?= $si['id'] ?>').val(sVal);
+                                $('#rate_<?= $si['id'] ?>').val(sRate);
                             <?php endforeach; ?>
                         }
                     });
                 } else {
                     $('.display-qty').text('0.00000');
                     $('input[type="hidden"][id^="qty_"]').val(0);
+                    $('input[type="hidden"][id^="rate_"]').val('');
                 }
             }
 

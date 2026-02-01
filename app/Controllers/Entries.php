@@ -122,6 +122,7 @@ class Entries extends BaseController
         // 3. Insert Main Items (Checked ones) - use item_id as key for correct qty mapping
         $main_item_ids = $this->request->getPost('main_item_id') ?: [];
         $main_qtys = $this->request->getPost('main_item_qty') ?: [];
+        $main_item_rates = $this->request->getPost('main_item_rates') ?: [];
 
         $db = \Config\Database::connect();
 
@@ -129,9 +130,11 @@ class Entries extends BaseController
             foreach ($main_item_ids as $mid) {
                 $qty = isset($main_qtys[$mid]) ? (float)$main_qtys[$mid] : 0;
                 if ($qty > 0) {
+                    $itemRate = isset($main_item_rates[$mid]) ? (float)$main_item_rates[$mid] : null;
                     $itemsModel->insert([
                         'daily_aahar_entries_id' => $parentId,
                         'item_id'                => $mid,
+                        'item_rates'             => $itemRate,
                         'qty'                    => $qty,
                         'is_disable'             => 0
                     ]);
@@ -151,14 +154,17 @@ class Entries extends BaseController
         // 4. Insert Support Items - use item_id as key for correct qty mapping
         $support_ids = $this->request->getPost('support_item_id') ?: [];
         $support_qtys = $this->request->getPost('support_qty') ?: [];
+        $support_item_rates = $this->request->getPost('support_item_rates') ?: [];
 
         if ($support_ids) {
             foreach ($support_ids as $sid) {
                 $qty = isset($support_qtys[$sid]) ? (float)$support_qtys[$sid] : 0;
                 if ($qty > 0) {
+                    $itemRate = isset($support_item_rates[$sid]) ? (float)$support_item_rates[$sid] : null;
                     $itemsModel->insert([
                         'daily_aahar_entries_id' => $parentId,
                         'item_id'                => $sid,
+                        'item_rates'             => $itemRate,
                         'qty'                    => $qty,
                         'is_disable'             => 0
                     ]);
@@ -216,12 +222,14 @@ class Entries extends BaseController
         ])->findAll();
 
         $all_calculated = [];
+        $per_student_rates = [];
         foreach ($rates as $rate) {
-            // Calculate the theoretical amount for every item
-            $all_calculated[$rate['item_id']] = number_format($present * $rate['per_student_qty'], 5, '.', '');
+            $qty = $present * $rate['per_student_qty'];
+            $all_calculated[$rate['item_id']] = number_format($qty, 5, '.', '');
+            $per_student_rates[$rate['item_id']] = number_format($rate['per_student_qty'], 5, '.', '');
         }
 
-        return $this->response->setJSON(['rates' => $all_calculated]);
+        return $this->response->setJSON(['rates' => $all_calculated, 'per_student_rates' => $per_student_rates]);
     }
 
     // delete

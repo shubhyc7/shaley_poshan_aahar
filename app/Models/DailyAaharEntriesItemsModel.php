@@ -8,7 +8,7 @@ class DailyAaharEntriesItemsModel extends Model
 {
     protected $table      = 'daily_aahar_entries_items';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['daily_aahar_entries_id', 'item_id', 'qty', 'is_disable'];
+    protected $allowedFields = ['daily_aahar_entries_id', 'item_id', 'item_rates', 'qty', 'is_disable'];
 
     public function getSupportEntriesByDate($date)
     {
