@@ -24,7 +24,7 @@
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">दैनंदिन पोषण आहार नोंद</h5>
         <div class="btn-header-group">
-            <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear) ?>" class="btn btn-success btn-sm">
+            <a href="<?= base_url('Entries/export?month=' . $filterMonth . '&year=' . $filterYear . (!empty($filterCategory) ? '&category=' . urlencode($filterCategory) : '')) ?>" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
         </div>
@@ -35,7 +35,7 @@
 
             <div class="card-header bg-white py-3">
                 <form method="GET" action="<?= base_url('Entries') ?>" class="row g-2 align-items-end filter-form">
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <label class="form-label small fw-bold">महिना निवडा</label>
                         <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
                             <?php for ($m = 1; $m <= 12; $m++) : ?>
@@ -49,7 +49,14 @@
                         <label class="form-label small fw-bold">वर्ष निवडा</label>
                         <input type="number" name="year" class="form-control form-control-sm" value="<?= $filterYear ?>" min="2020" max="2030" onchange="this.form.submit()">
                     </div>
-
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-bold">इयत्ता निवडा</label>
+                        <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">सर्व इयत्ता</option>
+                            <option value="1-5" <?= ($filterCategory ?? '') == '1-5' ? 'selected' : '' ?>>1-5</option>
+                            <option value="6-8" <?= ($filterCategory ?? '') == '6-8' ? 'selected' : '' ?>>6-8</option>
+                        </select>
+                    </div>
                 </form>
             </div>
         </div>
@@ -77,6 +84,7 @@
             <form action="<?= base_url('entries/store') ?>" method="POST" id="entryForm">
                 <input type="hidden" name="filter_month" value="<?= $filterMonth ?? date('n') ?>">
                 <input type="hidden" name="filter_year" value="<?= $filterYear ?? date('Y') ?>">
+                <input type="hidden" name="filter_category" value="<?= esc($filterCategory ?? '') ?>">
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle mb-0">
                         <thead class="table-dark text-center">
@@ -174,7 +182,7 @@
                                         <td class="text-center small"><?= $q > 0 ? number_format($q, 5) : '-' ?></td>
                                     <?php endforeach; ?>
                                     <td class="text-center btn-action-group">
-                                        <a href="<?= base_url('entries/delete/' . $row['id'] . '?month=' . ($filterMonth ?? date('n')) . '&year=' . ($filterYear ?? date('Y'))) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ही नोंद हटवायची?')" title="हटवा"><i class="fas fa-trash"></i></a>
+                                        <a href="<?= base_url('entries/delete/' . $row['id'] . '?month=' . ($filterMonth ?? date('n')) . '&year=' . ($filterYear ?? date('Y')) . (!empty($filterCategory) ? '&category=' . urlencode($filterCategory) : '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ही नोंद हटवायची?')" title="हटवा"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

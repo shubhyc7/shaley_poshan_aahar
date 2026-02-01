@@ -25,6 +25,7 @@ class Entries extends BaseController
 
         $filterMonth = (int)($this->request->getGet('month') ?? date('n'));
         $filterYear  = (int)($this->request->getGet('year') ?? date('Y'));
+        $filterCategory = trim($this->request->getGet('category') ?? '');
         $filterMonth = ($filterMonth < 1 || $filterMonth > 12) ? (int)date('n') : $filterMonth;
         $filterYear  = ($filterYear < 2020 || $filterYear > 2030) ? (int)date('Y') : $filterYear;
         $startDate   = "$filterYear-" . str_pad($filterMonth, 2, "0", STR_PAD_LEFT) . "-01";
@@ -58,15 +59,17 @@ class Entries extends BaseController
 
         $data['monthly_stock_logic'] = $monthlyStock;
 
-        $data['entries'] = $DailyAaharEntriesModel->where('is_disable', 0)
+        $entriesQuery = $DailyAaharEntriesModel->where('is_disable', 0)
             ->where('MONTH(entry_date)', $filterMonth)
-            ->where('YEAR(entry_date)', $filterYear)
-            // ->orderBy('entry_date', 'DESC')
-            ->orderBy('entry_date', 'ASC')
-            ->findAll();
+            ->where('YEAR(entry_date)', $filterYear);
+        if (!empty($filterCategory)) {
+            $entriesQuery->where('category', $filterCategory);
+        }
+        $data['entries'] = $entriesQuery->orderBy('entry_date', 'ASC')->findAll();
 
         $data['filterMonth'] = $filterMonth;
         $data['filterYear']  = $filterYear;
+        $data['filterCategory'] = $filterCategory;
 
         return view('entries_view', $data);
     }
@@ -183,7 +186,10 @@ class Entries extends BaseController
 
         $filterMonth = $this->request->getPost('filter_month') ?? $this->request->getGet('month') ?? date('n');
         $filterYear = $this->request->getPost('filter_year') ?? $this->request->getGet('year') ?? date('Y');
-        return redirect()->to('/entries?month=' . $filterMonth . '&year=' . $filterYear)->with('status', 'नोंद यशस्वीरित्या जतन केली!');
+        $filterCategory = $this->request->getPost('filter_category') ?? $this->request->getGet('category') ?? '';
+        $redirectUrl = '/entries?month=' . $filterMonth . '&year=' . $filterYear;
+        if (!empty($filterCategory)) $redirectUrl .= '&category=' . urlencode($filterCategory);
+        return redirect()->to($redirectUrl)->with('status', 'नोंद यशस्वीरित्या जतन केली!');
     }
 
     // getStrengthAjax
@@ -239,6 +245,7 @@ class Entries extends BaseController
 
         $filterMonth = $this->request->getGet('month') ?? date('n');
         $filterYear = $this->request->getGet('year') ?? date('Y');
+        $filterCategory = $this->request->getGet('category') ?? '';
 
         // 1. Soft delete the main parent entry
         $db->table('daily_aahar_entries')
@@ -256,7 +263,9 @@ class Entries extends BaseController
             ->where('daily_aahar_entries_id', $id)
             ->update(['is_disable' => 1]);
 
-        return redirect()->to('/entries?month=' . $filterMonth . '&year=' . $filterYear)->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली!');
+        $redirectUrl = '/entries?month=' . $filterMonth . '&year=' . $filterYear;
+        if (!empty($filterCategory)) $redirectUrl .= '&category=' . urlencode($filterCategory);
+        return redirect()->to($redirectUrl)->with('status', 'नोंद यशस्वीरित्या हटवण्यात आली!');
     }
 
     // export
@@ -269,6 +278,7 @@ class Entries extends BaseController
         // Capture filters from the URL
         $month = $this->request->getGet('month') ?? date('n');
         $year  = $this->request->getGet('year') ?? date('Y');
+        $category = trim($this->request->getGet('category') ?? '');
         $startDate = "$year-" . str_pad($month, 2, "0", STR_PAD_LEFT) . "-01";
 
         // 1. Fetch Items and Filtered Parent Entries
@@ -277,11 +287,13 @@ class Entries extends BaseController
         $allItems = array_merge($mainItems, $supportItems);
         $itemCount = count($allItems);
 
-        $entries = $DailyAaharEntriesModel->where('is_disable', 0)
+        $entriesQuery = $DailyAaharEntriesModel->where('is_disable', 0)
             ->where('MONTH(entry_date)', $month)
-            ->where('YEAR(entry_date)', $year)
-            ->orderBy('entry_date', 'ASC')
-            ->findAll();
+            ->where('YEAR(entry_date)', $year);
+        if (!empty($category)) {
+            $entriesQuery->where('category', $category);
+        }
+        $entries = $entriesQuery->orderBy('entry_date', 'ASC')->findAll();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
