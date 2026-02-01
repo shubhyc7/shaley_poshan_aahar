@@ -137,6 +137,7 @@ class Entries extends BaseController
                     ]);
                     $db->table('stock_transactions')->insert([
                         'item_id' => $mid,
+                        'category' => $category,
                         'transaction_type' => 'OUT',
                         'daily_aahar_entries_id' => $parentId,
                         'quantity' => $qty,
@@ -163,6 +164,7 @@ class Entries extends BaseController
                     ]);
                     $db->table('stock_transactions')->insert([
                         'item_id' => $sid,
+                        'category' => $category,
                         'transaction_type' => 'OUT',
                         'daily_aahar_entries_id' => $parentId,
                         'quantity' => $qty,

@@ -23,7 +23,7 @@
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0 text-primary fw-bold">स्टॉक नोंद</h5>
         <div class="btn-header-group">
-            <a href="<?= base_url("Stock/export?month=$month&year=$year" . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-success btn-sm">
+            <a href="<?= base_url("Stock/export?month=$month&year=$year" . (!empty($selected_category) ? "&category=" . urlencode($selected_category) : '') . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-1"></i> एक्सेलमध्ये निर्यात करा
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStockModal">
@@ -64,6 +64,14 @@
                 <label class="form-label small fw-bold">वर्ष निवडा</label>
                 <input type="number" name="year" class="form-control form-control-sm" value="<?= $year ?>" min="2020" max="2030" onchange="this.form.submit()">
             </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small fw-bold">इयत्ता निवडा</label>
+                <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">सर्व इयत्ता</option>
+                    <option value="1-5" <?= ($selected_category ?? '') == '1-5' ? 'selected' : '' ?>>1-5</option>
+                    <option value="6-8" <?= ($selected_category ?? '') == '6-8' ? 'selected' : '' ?>>6-8</option>
+                </select>
+            </div>
             <div class="col-12 col-md-3">
                 <label class="form-label small fw-bold">वस्तू निवडा</label>
                 <select name="item_id" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -81,6 +89,7 @@
                 <thead class="table-light text-center small">
                     <tr class="table-dark">
                         <th>तारीख</th>
+                        <th>इयत्ता</th>
                         <th>वस्तू (एकक)</th>
                         <th>प्रकार</th>
                         <th>प्रारंभिक (Opening)</th>
@@ -99,6 +108,7 @@
                     ?>
                         <tr class="small">
                             <td class="text-center"><?= date('d-m-Y', strtotime($row['transaction_date'])) ?></td>
+                            <td class="text-center"><span class="badge <?= ($row['category'] ?? '') == '6-8' ? 'bg-info' : 'bg-primary' ?>"><?= esc($row['category'] ?? '') ?></span></td>
                             <td><strong><?= esc($row['item_name']) ?></strong> <small class="text-muted">(<?= esc($row['unit']) ?>)</small></td>
                             <td class="text-center">
                                     <span class="badge <?= $row['transaction_type'] == 'OUT' ? 'bg-danger' : ($row['transaction_type'] == 'OPENING' ? 'bg-info' : 'bg-success') ?>">
@@ -113,7 +123,7 @@
                             <td class="text-center btn-action-group">
                                 <?php if ($row['transaction_type'] != 'OUT') : ?>
                                     <button type="button" class="btn btn-sm btn-outline-primary edit-stock-btn" data-id="<?= esc($row['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
-                                    <a href="<?= base_url("Stock/delete/{$row['id']}?month=$month&year=$year" . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
+                                    <a href="<?= base_url("Stock/delete/{$row['id']}?month=$month&year=$year" . (!empty($selected_category) ? "&category=" . urlencode($selected_category) : '') . (!empty($selected_item) ? "&item_id=$selected_item" : '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('हटवायचे?')" title="हटवा"><i class="fas fa-trash"></i></a>
                                 <?php else : ?>
                                     <i class="fas fa-lock text-muted" title="Entry Screen Linked"></i>
                                 <?php endif; ?>
@@ -123,24 +133,26 @@
                 </tbody>
                 <tfoot class="table-dark">
                     <?php
-                    // 1. Calculate Total Opening Balance for filtered context
+                    // 1. Calculate Total Opening Balance for filtered context (category-wise)
                     $totalOpening = 0;
-                    if ($selected_item) {
-                        // If one item is selected, use its specific opening balance
-                        $totalOpening = $opening_balances[$selected_item] ?? 0;
+                    $selCat = $selected_category ?? '';
+                    if ($selected_item && $selCat) {
+                        $totalOpening = $opening_balances[$selected_item . '_' . $selCat] ?? 0;
+                    } elseif ($selected_item) {
+                        $totalOpening = ($opening_balances[$selected_item . '_1-5'] ?? 0) + ($opening_balances[$selected_item . '_6-8'] ?? 0);
+                    } elseif ($selCat) {
+                        $suffix = '_' . $selCat;
+                        foreach ($opening_balances as $k => $v) {
+                            if (substr($k, -strlen($suffix)) === $suffix) $totalOpening += $v;
+                        }
                     } else {
-                        // If all items are shown, sum up all their opening balances for the month
                         $totalOpening = array_sum($opening_balances);
                     }
 
-                    // 2. Transaction Totals (already calculated in your loop)
-                    // Note: Ensure $tIn and $tOut are initialized before your foreach loop
-
-                    // 3. Final Closing
                     $finalClosing = ($totalOpening + $tIn) - $tOut;
                     ?>
                     <tr class="align-middle">
-                        <td colspan="3" class="text-end fw-bold">एकूण सारांश (Total Summary):</td>
+                        <td colspan="4" class="text-end fw-bold">एकूण सारांश (Total Summary):</td>
                         <td class="text-end">
                             <span class="d-block small text-muted">Total Opening</span>
                             <strong><?= number_format($totalOpening, 5) ?></strong>
@@ -155,6 +167,7 @@
                             <span class="d-block small text-info">Final Closing</span>
                             <strong class="text-warning"><?= number_format($finalClosing, 5) ?></strong>
                         </td>
+                        <td></td>
                         <td></td>
                     </tr>
                 </tfoot>
@@ -176,8 +189,16 @@
 
                 <input type="hidden" name="filter_month" value="<?= $month ?>">
                 <input type="hidden" name="filter_year" value="<?= $year ?>">
+                <input type="hidden" name="filter_category" value="<?= esc($selected_category ?? '') ?>">
                 <input type="hidden" name="filter_item_id" value="<?= $selected_item ?>">
 
+                <div class="mb-3">
+                    <label class="small fw-bold">इयत्ता</label>
+                    <select name="category" id="edit_category" class="form-select" required>
+                        <option value="1-5" <?= old('category', '1-5') == '1-5' ? 'selected' : '' ?>>1-5</option>
+                        <option value="6-8" <?= old('category') == '6-8' ? 'selected' : '' ?>>6-8</option>
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label class="small fw-bold">प्रकार</label>
                     <select name="transaction_type" id="edit_type" class="form-select" required>
@@ -238,6 +259,7 @@
             $.get('<?= base_url('Stock/edit/') ?>/' + id)
                 .done(function(data) {
                     $('#edit_id').val(data.id);
+                    $('#edit_category').val(data.category || '1-5');
                     $('#edit_type').val(data.transaction_type);
                     $('#edit_date').val(data.transaction_date);
                     $('#edit_item_id').val(data.item_id);

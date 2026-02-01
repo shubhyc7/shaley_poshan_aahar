@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jan 26, 2026 at 07:53 AM
+-- Generation Time: Jan 30, 2026 at 09:14 AM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 7.4.29
 
@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `daily_aahar_entries` (
   `id` int(11) NOT NULL,
-  `category` enum('6-8','9-10') NOT NULL,
+  `category` enum('1-5','6-8') NOT NULL,
   `entry_date` date DEFAULT NULL,
   `total_students` int(11) DEFAULT NULL,
   `present_students` int(11) DEFAULT NULL,
@@ -37,15 +37,6 @@ CREATE TABLE `daily_aahar_entries` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `daily_aahar_entries`
---
-
-INSERT INTO `daily_aahar_entries` (`id`, `category`, `entry_date`, `total_students`, `present_students`, `is_disable`, `created_at`, `updated_at`) VALUES
-(1, '6-8', '2026-01-01', 20, 5, 0, '2026-01-25 23:58:52', '2026-01-25 23:58:52'),
-(2, '6-8', '2026-01-26', 20, 2, 0, '2026-01-26 00:14:13', '2026-01-26 00:14:13'),
-(3, '6-8', '2026-01-02', 20, 10, 0, '2026-01-26 00:42:50', '2026-01-26 00:42:50');
 
 -- --------------------------------------------------------
 
@@ -57,31 +48,12 @@ CREATE TABLE `daily_aahar_entries_items` (
   `id` int(11) NOT NULL,
   `daily_aahar_entries_id` int(11) DEFAULT NULL,
   `item_id` int(11) DEFAULT NULL,
-  `qty` decimal(10,3) DEFAULT NULL,
+  `item_rates` decimal(20,5) DEFAULT NULL,
+  `qty` decimal(20,5) DEFAULT NULL,
   `is_disable` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `daily_aahar_entries_items`
---
-
-INSERT INTO `daily_aahar_entries_items` (`id`, `daily_aahar_entries_id`, `item_id`, `qty`, `is_disable`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, '0.500', 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(2, 1, 2, '0.500', 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(3, 1, 3, '0.500', 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(4, 1, 4, '2.500', 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(5, 1, 5, '1.000', 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(6, 2, 1, '0.200', 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(7, 2, 3, '0.200', 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(8, 2, 4, '1.000', 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(9, 2, 5, '0.400', 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(10, 3, 1, '1.000', 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(11, 3, 2, '1.000', 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(12, 3, 3, '1.000', 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(13, 3, 4, '5.000', 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(14, 3, 5, '2.000', 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50');
 
 -- --------------------------------------------------------
 
@@ -93,7 +65,7 @@ CREATE TABLE `items` (
   `id` int(11) NOT NULL,
   `item_name` varchar(50) DEFAULT NULL,
   `item_type` enum('MAIN','SUPPORT') DEFAULT NULL,
-  `unit` varchar(10) DEFAULT NULL,
+  `unit` varchar(20) DEFAULT NULL,
   `is_disable` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -104,11 +76,23 @@ CREATE TABLE `items` (
 --
 
 INSERT INTO `items` (`id`, `item_name`, `item_type`, `unit`, `is_disable`, `created_at`, `updated_at`) VALUES
-(1, 'तांदूळ', 'MAIN', 'ग्रॅम', 0, '2026-01-25 23:52:33', '2026-01-25 23:52:33'),
-(2, 'मूगडाळ', 'MAIN', 'ग्रॅम', 0, '2026-01-25 23:52:51', '2026-01-25 23:52:51'),
-(3, 'तेल', 'SUPPORT', 'ग्रॅम', 0, '2026-01-25 23:53:02', '2026-01-25 23:53:02'),
-(4, 'मीठ', 'SUPPORT', 'ग्रॅम', 0, '2026-01-25 23:53:08', '2026-01-25 23:53:08'),
-(5, 'वाटाणा', 'SUPPORT', 'ग्रॅम', 0, '2026-01-25 23:53:16', '2026-01-25 23:53:16');
+(1, 'तांदूळ', 'MAIN', 'ग्रॅम', 0, '2026-01-27 08:09:09', '2026-01-27 08:09:09'),
+(2, 'मुंगडाळ', 'MAIN', 'ग्रॅम', 0, '2026-01-27 08:39:19', '2026-01-27 08:59:13'),
+(3, 'तूर डाळ', 'MAIN', 'ग्रॅम', 0, '2026-01-27 08:41:08', '2026-01-27 08:59:27'),
+(4, 'मसूर', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:41:23', '2026-01-27 08:41:23'),
+(5, 'मटकी', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:41:35', '2026-01-27 08:41:35'),
+(6, 'मूळ', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:41:45', '2026-01-27 08:41:45'),
+(7, 'चवली', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:41:59', '2026-01-27 08:41:59'),
+(8, 'हरभरा', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:42:10', '2026-01-27 08:42:10'),
+(9, 'वाटाणा', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:42:18', '2026-01-27 08:42:18'),
+(10, 'जिरा', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:42:33', '2026-01-27 08:42:33'),
+(11, 'मोहरी', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:42:42', '2026-01-27 08:42:42'),
+(12, 'हळद', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:43:09', '2026-01-27 08:43:09'),
+(13, 'मिरची पोउदर', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:43:38', '2026-01-27 08:43:38'),
+(14, 'सोयाबीन तेल', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:43:48', '2026-01-27 08:43:48'),
+(15, 'मीठ', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:44:00', '2026-01-27 08:44:00'),
+(16, 'मसाला', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:44:07', '2026-01-27 08:44:07'),
+(17, 'सोयावदी', 'SUPPORT', 'ग्रॅम', 0, '2026-01-27 08:44:27', '2026-01-27 08:44:27');
 
 -- --------------------------------------------------------
 
@@ -118,11 +102,9 @@ INSERT INTO `items` (`id`, `item_name`, `item_type`, `unit`, `is_disable`, `crea
 
 CREATE TABLE `item_rates` (
   `id` int(11) NOT NULL,
-  `category` enum('6-8','9-10') NOT NULL,
+  `category` enum('1-5','6-8') NOT NULL,
   `item_id` int(11) DEFAULT NULL,
-  `per_student_qty` decimal(10,3) DEFAULT NULL,
-  `month` int(11) DEFAULT NULL,
-  `year` int(11) DEFAULT NULL,
+  `per_student_qty` decimal(20,5) DEFAULT NULL,
   `is_disable` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -132,12 +114,18 @@ CREATE TABLE `item_rates` (
 -- Dumping data for table `item_rates`
 --
 
-INSERT INTO `item_rates` (`id`, `category`, `item_id`, `per_student_qty`, `month`, `year`, `is_disable`, `created_at`, `updated_at`) VALUES
-(1, '6-8', 1, '0.100', 1, 2026, 0, '2026-01-25 23:53:32', '2026-01-25 23:53:32'),
-(2, '6-8', 2, '0.100', 1, 2026, 0, '2026-01-25 23:53:42', '2026-01-25 23:53:42'),
-(3, '6-8', 3, '0.100', 1, 2026, 0, '2026-01-25 23:53:51', '2026-01-25 23:53:51'),
-(4, '6-8', 4, '0.500', 1, 2026, 0, '2026-01-25 23:53:59', '2026-01-25 23:53:59'),
-(5, '6-8', 5, '0.200', 1, 2026, 0, '2026-01-25 23:54:08', '2026-01-25 23:54:08');
+INSERT INTO `item_rates` (`id`, `category`, `item_id`, `per_student_qty`, `is_disable`, `created_at`, `updated_at`) VALUES
+(1, '1-5', 1, '0.10000', 0, '2026-01-27 08:09:43', '2026-01-27 08:51:28'),
+(2, '1-5', 1, '0.10000', 0, '2026-01-27 08:46:28', '2026-01-27 08:46:28'),
+(3, '1-5', 2, '0.02000', 0, '2026-01-27 08:46:56', '2026-01-27 08:46:56'),
+(4, '1-5', 3, '0.01000', 0, '2026-01-27 08:47:08', '2026-01-27 08:47:08'),
+(5, '1-5', 4, '0.02000', 0, '2026-01-27 08:47:29', '2026-01-27 08:47:29'),
+(6, '1-5', 5, '0.02000', 0, '2026-01-27 08:48:00', '2026-01-27 08:48:00'),
+(7, '1-5', 6, '0.01000', 0, '2026-01-27 08:48:24', '2026-01-27 08:48:24'),
+(8, '1-5', 7, '0.02000', 0, '2026-01-27 08:49:03', '2026-01-27 08:49:03'),
+(9, '1-5', 9, '0.02000', 0, '2026-01-27 08:49:14', '2026-01-27 08:49:14'),
+(10, '1-5', 17, '0.02000', 0, '2026-01-27 08:49:29', '2026-01-27 08:49:29'),
+(11, '1-5', 10, '0.00200', 0, '2026-01-27 08:50:13', '2026-01-27 08:50:13');
 
 -- --------------------------------------------------------
 
@@ -148,42 +136,15 @@ INSERT INTO `item_rates` (`id`, `category`, `item_id`, `per_student_qty`, `month
 CREATE TABLE `stock_transactions` (
   `id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
-  `category` enum('1-5','6-8') NOT NULL,
   `transaction_type` enum('OPENING','IN','OUT') NOT NULL,
   `daily_aahar_entries_id` int(11) DEFAULT NULL,
-  `quantity` decimal(10,3) NOT NULL,
+  `quantity` decimal(20,5) NOT NULL,
   `transaction_date` date NOT NULL,
   `remarks` varchar(255) DEFAULT NULL,
   `is_disable` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `stock_transactions`
---
-
-INSERT INTO `stock_transactions` (`id`, `item_id`, `category`, `transaction_type`, `daily_aahar_entries_id`, `quantity`, `transaction_date`, `remarks`, `is_disable`, `created_at`, `updated_at`) VALUES
-(1, 1, '6-8', 'OPENING', NULL, '2000.000', '2025-12-31', 'OPENING', 0, '2026-01-26 11:24:58', '2026-01-26 11:30:14'),
-(2, 2, '6-8', 'OPENING', NULL, '1000.000', '2025-12-31', 'OPENING', 0, '2026-01-26 11:25:12', '2026-01-26 11:30:46'),
-(3, 3, '6-8', 'OPENING', NULL, '1000.000', '2025-12-31', 'OPENING', 0, '2026-01-26 11:25:52', '2026-01-26 11:30:53'),
-(4, 4, '6-8', 'OPENING', NULL, '1000.000', '2025-12-31', 'OPENING', 0, '2026-01-26 11:26:03', '2026-01-26 11:30:40'),
-(5, 5, '6-8', 'OPENING', NULL, '1000.000', '2025-12-31', 'OPENING', 0, '2026-01-26 11:26:34', '2026-01-26 11:30:24'),
-(6, 1, '6-8', 'OUT', 1, '0.500', '2026-01-01', NULL, 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(7, 2, '6-8', 'OUT', 1, '0.500', '2026-01-01', NULL, 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(8, 3, '6-8', 'OUT', 1, '0.500', '2026-01-01', NULL, 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(9, 4, '6-8', 'OUT', 1, '2.500', '2026-01-01', NULL, 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(10, 5, '6-8', 'OUT', 1, '1.000', '2026-01-01', NULL, 0, '2026-01-26 11:28:52', '2026-01-26 11:28:52'),
-(11, 1, '6-8', 'OUT', 2, '0.200', '2026-01-26', NULL, 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(12, 3, '6-8', 'OUT', 2, '0.200', '2026-01-26', NULL, 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(13, 4, '6-8', 'OUT', 2, '1.000', '2026-01-26', NULL, 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(14, 5, '6-8', 'OUT', 2, '0.400', '2026-01-26', NULL, 0, '2026-01-26 11:44:13', '2026-01-26 11:44:13'),
-(15, 1, '6-8', 'OUT', 3, '1.000', '2026-01-02', NULL, 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(16, 2, '6-8', 'OUT', 3, '1.000', '2026-01-02', NULL, 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(17, 3, '6-8', 'OUT', 3, '1.000', '2026-01-02', NULL, 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(18, 4, '6-8', 'OUT', 3, '5.000', '2026-01-02', NULL, 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(19, 5, '6-8', 'OUT', 3, '2.000', '2026-01-02', NULL, 0, '2026-01-26 12:12:50', '2026-01-26 12:12:50'),
-(20, 1, '6-8', 'IN', NULL, '10.000', '2026-01-26', 'test', 0, '2026-01-26 12:23:31', '2026-01-26 12:23:31');
 
 -- --------------------------------------------------------
 
@@ -193,21 +154,35 @@ INSERT INTO `stock_transactions` (`id`, `item_id`, `category`, `transaction_type
 
 CREATE TABLE `student_strength` (
   `id` int(11) NOT NULL,
-  `category` enum('6-8','9-10') NOT NULL,
+  `category` enum('1-5','6-8') NOT NULL,
   `total_students` int(11) DEFAULT NULL,
-  `month` int(11) DEFAULT NULL,
-  `year` int(11) DEFAULT NULL,
   `is_disable` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `student_strength`
+-- Table structure for table `users`
 --
 
-INSERT INTO `student_strength` (`id`, `category`, `total_students`, `month`, `year`, `is_disable`, `created_at`, `updated_at`) VALUES
-(1, '6-8', 20, 1, 2026, 0, '2026-01-25 23:54:21', '2026-01-25 23:54:21');
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `full_name` varchar(100) DEFAULT NULL,
+  `role` enum('ADMIN','TEACHER') DEFAULT 'TEACHER',
+  `is_disable` tinyint(1) DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `password`, `full_name`, `role`, `is_disable`, `created_at`) VALUES
+(1, 'admin', '$2y$10$iORWvI3L3Sb6PqfkCi8ypO/SF5aIq2C95TpQGHLvqxW3pxfO5oANK', 'System Admin', 'ADMIN', 0, '2026-01-26 12:29:03');
 
 --
 -- Indexes for dumped tables
@@ -256,6 +231,13 @@ ALTER TABLE `student_strength`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -263,36 +245,42 @@ ALTER TABLE `student_strength`
 -- AUTO_INCREMENT for table `daily_aahar_entries`
 --
 ALTER TABLE `daily_aahar_entries`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `daily_aahar_entries_items`
 --
 ALTER TABLE `daily_aahar_entries_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `item_rates`
 --
 ALTER TABLE `item_rates`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `stock_transactions`
 --
 ALTER TABLE `stock_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `student_strength`
 --
 ALTER TABLE `student_strength`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --

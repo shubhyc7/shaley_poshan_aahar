@@ -6,6 +6,6 @@ class StockModel extends Model
 {
     protected $table      = 'stock_transactions';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['item_id', 'transaction_type', 'daily_aahar_entries_item_id', 'transaction_date', 'quantity', 'remarks', 'is_disable'];
+    protected $allowedFields = ['item_id', 'category', 'transaction_type', 'daily_aahar_entries_id', 'transaction_date', 'quantity', 'remarks', 'is_disable'];
     protected $useTimestamps = true;
 }
