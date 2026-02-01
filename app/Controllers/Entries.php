@@ -231,8 +231,8 @@ class Entries extends BaseController
         $per_student_rates = [];
         foreach ($rates as $rate) {
             $qty = $present * $rate['per_student_qty'];
-            $all_calculated[$rate['item_id']] = number_format($qty, 5, '.', '');
-            $per_student_rates[$rate['item_id']] = number_format($rate['per_student_qty'], 5, '.', '');
+            $all_calculated[$rate['item_id']] = number_format($qty, 4, '.', '');
+            $per_student_rates[$rate['item_id']] = number_format($rate['per_student_qty'], 4, '.', '');
         }
 
         return $this->response->setJSON(['rates' => $all_calculated, 'per_student_rates' => $per_student_rates]);
@@ -402,7 +402,7 @@ class Entries extends BaseController
         $firstItemColLetter = 'F';
         $sheet->getStyle("{$firstItemColLetter}2:{$lastCol}{$rowNum}")
             ->getNumberFormat()
-            ->setFormatCode('0.00000');
+            ->setFormatCode('0.0000');
         // ----------------------------------------------------------------------
 
         $sheet->getStyle("A$rowNum:{$lastCol}$rowNum")->applyFromArray([

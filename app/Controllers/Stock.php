@@ -303,8 +303,8 @@ class Stock extends BaseController
         }
 
         // --- APPLY FIVE DECIMAL FORMATTING ---
-        $sheet->getStyle("E4:G" . ($row - 1))->getNumberFormat()->setFormatCode('0.00000');
-        $sheet->getStyle("F4:F" . ($row - 1))->getNumberFormat()->setFormatCode('[Red]-0.00000;0.00000');
+        $sheet->getStyle("E4:G" . ($row - 1))->getNumberFormat()->setFormatCode('0.0000');
+        $sheet->getStyle("F4:F" . ($row - 1))->getNumberFormat()->setFormatCode('[Red]-0.0000;0.0000');
 
         // 6. Add Summary Footer
         $sheet->setCellValue('A' . $row, 'एकूण सारांश');
@@ -315,8 +315,8 @@ class Stock extends BaseController
         $sheet->setCellValue('G' . $row, ($totalMonthOpening + $tIn - $tOut));
 
         // Format footer numbers
-        $sheet->getStyle("E$row")->getNumberFormat()->setFormatCode('0.00000');
-        $sheet->getStyle("G$row")->getNumberFormat()->setFormatCode('"Closing: "0.00000');
+        $sheet->getStyle("E$row")->getNumberFormat()->setFormatCode('0.0000');
+        $sheet->getStyle("G$row")->getNumberFormat()->setFormatCode('"Closing: "0.0000');
 
         // Styling
         $sheet->getStyle("A$row:H$row")->getFont()->setBold(true);

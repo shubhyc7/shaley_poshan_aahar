@@ -113,7 +113,7 @@
                                     $stock = $monthly_stock_logic[$item['id']];
                                 ?>
                                     <td class="text-center p-1">
-                                        <div class="fw-bold"><?= number_format($stock['available'], 5) ?></div>
+                                        <div class="fw-bold"><?= number_format($stock['available'], 4) ?></div>
                                         <a href="<?= base_url('Stock?item_id=' . $item['id'] . '&add_mode=1') ?>" class="btn btn-xs btn-outline-dark py-0" style="font-size: 0.6rem;">
                                             + Stock
                                         </a>
@@ -140,7 +140,7 @@
                                         <input type="checkbox" name="main_item_id[]" value="<?= $mi['id'] ?>" class="main-item-chk">
                                         <input type="hidden" name="main_item_qty[<?= $mi['id'] ?>]" id="qty_<?= $mi['id'] ?>" value="0">
                                         <input type="hidden" name="main_item_rates[<?= $mi['id'] ?>]" id="rate_<?= $mi['id'] ?>" value="">
-                                        <div class="small fw-bold text-primary display-qty" id="display_<?= $mi['id'] ?>">0.00000</div>
+                                        <div class="small fw-bold text-primary display-qty" id="display_<?= $mi['id'] ?>">0.0000</div>
                                     </td>
                                 <?php endforeach; ?>
 
@@ -149,7 +149,7 @@
                                         <input type="hidden" name="support_item_id[]" value="<?= $si['id'] ?>">
                                         <input type="hidden" name="support_qty[<?= $si['id'] ?>]" id="qty_<?= $si['id'] ?>" value="0">
                                         <input type="hidden" name="support_item_rates[<?= $si['id'] ?>]" id="rate_<?= $si['id'] ?>" value="">
-                                        <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>">0.00000</div>
+                                        <div class="small fw-bold text-secondary display-qty" id="display_<?= $si['id'] ?>">0.0000</div>
                                     </td>
                                 <?php endforeach; ?>
                                 <td class="text-center"><button type="submit" class="btn btn-success btn-sm w-100">जतन करा</button></td>
@@ -179,7 +179,7 @@
                                         $q = $qtyMap[$it['id']] ?? 0;
                                         $itemTotals[$it['id']] = ($itemTotals[$it['id']] ?? 0) + $q;
                                     ?>
-                                        <td class="text-center small"><?= $q > 0 ? number_format($q, 5) : '-' ?></td>
+                                        <td class="text-center small"><?= $q > 0 ? number_format($q, 4) : '-' ?></td>
                                     <?php endforeach; ?>
                                     <td class="text-center btn-action-group">
                                         <a href="<?= base_url('entries/delete/' . $row['id'] . '?month=' . ($filterMonth ?? date('n')) . '&year=' . ($filterYear ?? date('Y')) . (!empty($filterCategory) ? '&category=' . urlencode($filterCategory) : '')) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ही नोंद हटवायची?')" title="हटवा"><i class="fas fa-trash"></i></a>
@@ -194,7 +194,7 @@
                                 <td class="text-center"><?= $sumTotal ?></td>
                                 <td class="text-center"><?= $sumPresent ?></td>
                                 <?php foreach (array_merge($main_items, $support_items) as $it) : ?>
-                                    <td class="text-center text-warning"><?= number_format($itemTotals[$it['id']] ?? 0, 5) ?></td>
+                                    <td class="text-center text-warning"><?= number_format($itemTotals[$it['id']] ?? 0, 4) ?></td>
                                 <?php endforeach; ?>
                                 <td></td>
                             </tr>
@@ -203,7 +203,7 @@
                                 <?php foreach (array_merge($main_items, $support_items) as $it) :
                                     $rem = ($monthly_stock_logic[$it['id']]['available']) - ($itemTotals[$it['id']] ?? 0);
                                 ?>
-                                    <td class="text-center fw-bold text-info"><?= number_format($rem, 5) ?></td>
+                                    <td class="text-center fw-bold text-info"><?= number_format($rem, 4) ?></td>
                                 <?php endforeach; ?>
                                 <td></td>
                             </tr>
@@ -264,13 +264,13 @@
                             $('.main-item-chk').each(function() {
                                 const id = $(this).val();
                                 if ($(this).is(':checked')) {
-                                    const val = rates[id] || "0.00000";
+                                    const val = rates[id] || "0.0000";
                                     const rateVal = perStudentRates[id] || "";
                                     $(`#display_${id}`).text(val);
                                     $(`#qty_${id}`).val(val);
                                     $(`#rate_${id}`).val(rateVal);
                                 } else {
-                                    $(`#display_${id}`).text('0.00000');
+                                    $(`#display_${id}`).text('0.0000');
                                     $(`#qty_${id}`).val(0);
                                     $(`#rate_${id}`).val('');
                                 }
@@ -278,7 +278,7 @@
 
                             // Calculate Support Items
                             <?php foreach ($support_items as $si) : ?>
-                                var sVal = (rates && rates[<?= $si['id'] ?>]) ? rates[<?= $si['id'] ?>] : "0.00000";
+                                var sVal = (rates && rates[<?= $si['id'] ?>]) ? rates[<?= $si['id'] ?>] : "0.0000";
                                 var sRate = (perStudentRates && perStudentRates[<?= $si['id'] ?>]) ? perStudentRates[<?= $si['id'] ?>] : "";
                                 $('#display_<?= $si['id'] ?>').text(sVal);
                                 $('#qty_<?= $si['id'] ?>').val(sVal);
@@ -287,7 +287,7 @@
                         }
                     });
                 } else {
-                    $('.display-qty').text('0.00000');
+                    $('.display-qty').text('0.0000');
                     $('input[type="hidden"][id^="qty_"]').val(0);
                     $('input[type="hidden"][id^="rate_"]').val('');
                 }

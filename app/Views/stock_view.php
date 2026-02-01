@@ -115,11 +115,11 @@
                                     <?= esc($row['transaction_type']) ?>
                                 </span>
                             </td>
-                            <td class="text-end text-muted"><?= number_format($row['opening_bal'], 5) ?></td>
+                            <td class="text-end text-muted"><?= number_format($row['opening_bal'], 4) ?></td>
                             <td class="text-end fw-bold <?= $row['transaction_type'] == 'OUT' ? 'text-danger' : 'text-success' ?>">
-                                <?= $row['transaction_type'] == 'OUT' ? '-' : '+' ?> <?= number_format($row['quantity'], 5) ?>
+                                <?= $row['transaction_type'] == 'OUT' ? '-' : '+' ?> <?= number_format($row['quantity'], 4) ?>
                             </td>
-                            <td class="text-end fw-bold text-primary"><?= number_format($row['closing_bal'], 5) ?></td>
+                            <td class="text-end fw-bold text-primary"><?= number_format($row['closing_bal'], 4) ?></td>
                             <td class="text-center btn-action-group">
                                 <?php if ($row['transaction_type'] != 'OUT') : ?>
                                     <button type="button" class="btn btn-sm btn-outline-primary edit-stock-btn" data-id="<?= esc($row['id']) ?>" title="संपादित करा"><i class="fas fa-edit"></i></button>
@@ -155,17 +155,17 @@
                         <td colspan="4" class="text-end fw-bold">एकूण सारांश (Total Summary):</td>
                         <td class="text-end">
                             <span class="d-block small text-muted">Total Opening</span>
-                            <strong><?= number_format($totalOpening, 5) ?></strong>
+                            <strong><?= number_format($totalOpening, 4) ?></strong>
                         </td>
                         <td class="text-center">
                             <div class="d-inline-block text-start px-2">
-                                <span class="d-block small text-success font-weight-bold">Total IN: + <?= number_format($tIn, 5) ?></span>
-                                <span class="d-block small text-danger font-weight-bold">Total OUT: - <?= number_format($tOut, 5) ?></span>
+                                <span class="d-block small text-success font-weight-bold">Total IN: + <?= number_format($tIn, 4) ?></span>
+                                <span class="d-block small text-danger font-weight-bold">Total OUT: - <?= number_format($tOut, 4) ?></span>
                             </div>
                         </td>
                         <td class="text-end">
                             <span class="d-block small text-info">Final Closing</span>
-                            <strong class="text-warning"><?= number_format($finalClosing, 5) ?></strong>
+                            <strong class="text-warning"><?= number_format($finalClosing, 4) ?></strong>
                         </td>
                         <td></td>
                         <td></td>
@@ -220,7 +220,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="small fw-bold">परिमाण (Qty)</label>
-                    <input type="number" step="0.00001" min="0.00001" name="quantity" id="edit_qty" class="form-control" value="<?= esc(old('quantity')) ?>" required placeholder="0.00000">
+                    <input type="number" step="0.0001" min="0.0001" name="quantity" id="edit_qty" class="form-control" value="<?= esc(old('quantity')) ?>" required placeholder="0.0000">
                 </div>
                 <div class="mb-3">
                     <label class="small fw-bold">शेरा</label>

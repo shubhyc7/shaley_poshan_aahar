@@ -200,7 +200,7 @@ class ItemRates extends BaseController
         // '0.000' ensures exactly 3 decimal places are shown (0.1 becomes 0.100)
         $sheet->getStyle('E2:E' . ($row - 1))
             ->getNumberFormat()
-            ->setFormatCode('0.00000');
+            ->setFormatCode('0.0000');
         // ------------------------------------------------
 
         foreach (range('A', 'F') as $col) { // Fixed range to include H
