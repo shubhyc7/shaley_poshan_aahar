@@ -99,7 +99,11 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-
+                    <?php
+                    $ctrl = service('router')->controllerName();
+                    $ctrl = strtolower(str_contains($ctrl, '\\') ? substr(strrchr($ctrl, '\\'), 1) : $ctrl);
+                    $navActive = fn($name) => ($ctrl === strtolower($name)) ? 'active fw-bold border-bottom' : '';
+                    ?>
                     <li class="nav-item">
                         <a class="nav-link text-warning" href="<?= base_url('Auth/logout') ?>">
                             <i class="fas fa-sign-out-alt"></i> बाहेर पडा (Logout)
@@ -107,31 +111,31 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= url_is('items*') ? 'active fw-bold border-bottom' : '' ?>" href="<?= base_url('items') ?>">
+                        <a class="nav-link <?= $navActive('Items') ?>" href="<?= base_url('items') ?>">
                             <i class="fas fa-list me-1"></i> वस्तू यादी
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= url_is('ItemRates*') ? 'active fw-bold border-bottom' : '' ?>" href="<?= base_url('ItemRates') ?>">
+                        <a class="nav-link <?= $navActive('ItemRates') ?>" href="<?= base_url('ItemRates') ?>">
                             <i class="fas fa-coins me-1"></i> वस्तू दर
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= url_is('StudentStrength*') ? 'active fw-bold border-bottom' : '' ?>" href="<?= base_url('StudentStrength') ?>">
+                        <a class="nav-link <?= $navActive('StudentStrength') ?>" href="<?= base_url('StudentStrength') ?>">
                             <i class="fas fa-users me-1"></i> विद्यार्थी संख्या
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= url_is('Stock*') ? 'active fw-bold border-bottom' : '' ?>" href="<?= base_url('Stock') ?>">
+                        <a class="nav-link <?= $navActive('Stock') ?>" href="<?= base_url('Stock') ?>">
                             <i class="fas fa-box me-1"></i> स्टॉक नोंद
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= url_is('entries*') ? 'active fw-bold border-bottom' : '' ?>" href="<?= base_url('entries') ?>">
+                        <a class="nav-link <?= $navActive('Entries') ?>" href="<?= base_url('entries') ?>">
                             <i class="fas fa-edit me-1"></i> दैनंदिन नोंद
                         </a>
                     </li>
