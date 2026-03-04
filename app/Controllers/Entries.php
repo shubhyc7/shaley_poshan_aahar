@@ -39,13 +39,13 @@ class Entries extends BaseController
             // 1. Opening: Balance before 1st of selected month
             $opening = $db->table('stock_transactions')
                 ->select("SUM(CASE WHEN transaction_type IN ('OPENING', 'IN') THEN quantity ELSE -quantity END) as bal", false)
-                ->where(['item_id' => $item['id'], 'transaction_date <' => $startDate, 'is_disable' => 0])
+                ->where(['item_id' => $item['id'], 'category' => $filterCategory, 'transaction_date <' => $startDate, 'is_disable' => 0])
                 ->get()->getRow()->bal ?? 0;
 
             // 2. Month Inward: Stock received during the filtered month
             $received = $db->table('stock_transactions')
                 ->selectSum('quantity')
-                ->where(['item_id' => $item['id'], 'transaction_type' => 'IN', 'is_disable' => 0])
+                ->where(['item_id' => $item['id'], 'category' => $filterCategory, 'transaction_type' => 'IN', 'is_disable' => 0])
                 ->where('MONTH(transaction_date)', $filterMonth)
                 ->where('YEAR(transaction_date)', $filterYear)
                 ->get()->getRow()->quantity ?? 0;
@@ -279,6 +279,9 @@ class Entries extends BaseController
         $month = $this->request->getGet('month') ?? date('n');
         $year  = $this->request->getGet('year') ?? date('Y');
         $category = trim($this->request->getGet('category') ?? '');
+        if ($category === '' || ! in_array($category, ['1-5', '6-8'], true)) {
+            $category = '1-5';
+        }
         $startDate = "$year-" . str_pad($month, 2, "0", STR_PAD_LEFT) . "-01";
 
         // 1. Fetch Items and Filtered Parent Entries
@@ -326,12 +329,12 @@ class Entries extends BaseController
         foreach ($allItems as $item) {
             $opening = $db->table('stock_transactions')
                 ->select("SUM(CASE WHEN transaction_type IN ('OPENING', 'IN') THEN quantity ELSE -quantity END) as bal", false)
-                ->where(['item_id' => $item['id'], 'transaction_date <' => $startDate, 'is_disable' => 0])
+                ->where(['item_id' => $item['id'], 'category' => $category, 'transaction_date <' => $startDate, 'is_disable' => 0])
                 ->get()->getRow()->bal ?? 0;
 
             $received = $db->table('stock_transactions')
                 ->selectSum('quantity')
-                ->where(['item_id' => $item['id'], 'transaction_type' => 'IN', 'is_disable' => 0])
+                ->where(['item_id' => $item['id'], 'category' => $category, 'transaction_type' => 'IN', 'is_disable' => 0])
                 ->where('MONTH(transaction_date)', $month)
                 ->where('YEAR(transaction_date)', $year)
                 ->get()->getRow()->quantity ?? 0;

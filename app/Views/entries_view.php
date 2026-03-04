@@ -52,7 +52,7 @@
                     <div class="col-6 col-md-2">
                         <label class="form-label small fw-bold">इयत्ता निवडा</label>
                         <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">सर्व इयत्ता</option>
+                            <!-- <option value="">सर्व इयत्ता</option> -->
                             <option value="1-5" <?= ($filterCategory ?? '') == '1-5' ? 'selected' : '' ?>>1-5</option>
                             <option value="6-8" <?= ($filterCategory ?? '') == '6-8' ? 'selected' : '' ?>>6-8</option>
                         </select>
@@ -91,7 +91,7 @@
                             <tr>
                                 <th style="width: 50px;">अ.क्र.</th>
                                 <th style="min-width: 10px;">तारीख</th>
-                                <th style="width: 150px;">इयत्ता</th>
+                                <th style="width: 200px; min-width: 90px;">इयत्ता</th>
                                 <th style="width: 70px;">एकूण</th>
                                 <th style="width: 70px;">उपस्थित</th>
                                 <?php foreach ($main_items as $mi) : ?>
