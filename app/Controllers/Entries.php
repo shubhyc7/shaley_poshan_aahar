@@ -26,6 +26,9 @@ class Entries extends BaseController
         $filterMonth = (int)($this->request->getGet('month') ?? date('n'));
         $filterYear  = (int)($this->request->getGet('year') ?? date('Y'));
         $filterCategory = trim($this->request->getGet('category') ?? '');
+        if ($filterCategory === '' || ! in_array($filterCategory, ['1-5', '6-8'], true)) {
+            $filterCategory = '1-5';
+        }
         $filterMonth = ($filterMonth < 1 || $filterMonth > 12) ? (int)date('n') : $filterMonth;
         $filterYear  = ($filterYear < 2020 || $filterYear > 2030) ? (int)date('Y') : $filterYear;
         $startDate   = "$filterYear-" . str_pad($filterMonth, 2, "0", STR_PAD_LEFT) . "-01";
