@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteBase /shaley_poshan_aahar/
+
+	# http://localhost/shaley_poshan_aahar/ -> .../public/
+	RewriteRule ^$ public/ [L,R=302]
+</IfModule>
